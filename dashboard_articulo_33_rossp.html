@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Art. 33 ROSSP — Tipo de interés técnico para la provisión de seguros de vida</title>
+<style>
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --text:#1a2330; --muted:#5b6b7c; --border:#d7dee6;
+  --accent:#0d4f8b; --accent2:#0a7a5f; --warn:#b45309; --danger:#b91c1c; --ok:#0a7a5f;
+  --chip:#e8f0fb; --code:#eef2f7; --shadow:0 1px 3px rgba(20,30,50,.08);
+  --radius:10px; --focus:#2563eb;
+}
+[data-theme="dark"]{
+  --bg:#0f1620; --panel:#161f2b; --text:#e6edf5; --muted:#9fb0c2; --border:#2a3646;
+  --accent:#5b9bd9; --accent2:#4fd1a5; --warn:#f2b866; --danger:#f87171; --ok:#4fd1a5;
+  --chip:#1d2b3d; --code:#101823; --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;}
+body{transition:background .25s,color .25s;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+h1,h2,h3,h4{line-height:1.25;}
+header.topbar{
+  position:sticky;top:0;z-index:50;background:var(--panel);border-bottom:1px solid var(--border);
+  padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;box-shadow:var(--shadow);
+}
+header.topbar .title{font-weight:700;font-size:1.05rem;color:var(--accent);}
+header.topbar .subtitle{font-size:.72rem;color:var(--muted);}
+header.topbar .grow{flex:1;}
+.btn{
+  border:1px solid var(--border);background:var(--panel);color:var(--text);
+  border-radius:8px;padding:.4rem .7rem;font-size:.78rem;cursor:pointer;display:inline-flex;
+  align-items:center;gap:.3rem;transition:background .15s;
+}
+.btn:hover{background:var(--chip);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.primary:hover{filter:brightness(1.08);}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok);}
+.btn.warn{background:var(--warn);color:#211;border-color:var(--warn);}
+.btn:focus-visible, input:focus-visible, select:focus-visible, button:focus-visible{
+  outline:3px solid var(--focus);outline-offset:1px;
+}
+#searchBox{border:1px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.8rem;
+  background:var(--code);color:var(--text);min-width:180px;}
+.layout{display:flex;max-width:1500px;margin:0 auto;}
+nav.sidebar{
+  width:250px;flex-shrink:0;padding:1rem .75rem;position:sticky;top:52px;
+  height:calc(100vh - 52px);overflow-y:auto;border-right:1px solid var(--border);
+}
+nav.sidebar h4{font-size:.7rem;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin:1rem 0 .4rem;}
+nav.sidebar ul{list-style:none;margin:0;padding:0;}
+nav.sidebar li a{
+  display:block;padding:.35rem .5rem;border-radius:6px;font-size:.83rem;color:var(--text);
+}
+nav.sidebar li a:hover{background:var(--chip);text-decoration:none;}
+nav.sidebar li a.active{background:var(--accent);color:#fff;}
+.levelfilter label{display:flex;align-items:center;gap:.4rem;font-size:.78rem;padding:.15rem 0;cursor:pointer;}
+#progressWrap{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin:.5rem 0;}
+#progressBar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;}
+main{flex:1;min-width:0;padding:1.2rem 1.6rem 4rem;}
+section{margin-bottom:2.6rem;scroll-margin-top:60px;}
+.card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem 1.2rem;box-shadow:var(--shadow);margin-bottom:1rem;
+}
+.card h3{margin-top:0;color:var(--accent);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;} nav.sidebar{display:none;} }
+.badge{display:inline-block;font-size:.68rem;padding:.15rem .5rem;border-radius:20px;
+  background:var(--chip);color:var(--accent);border:1px solid var(--border);margin-right:.3rem;}
+.badge.vig{background:#dcfce7;color:#166534;border-color:#86efac;}
+.badge.der{background:#fee2e2;color:#991b1b;border-color:#fca5a5;}
+.badge.trans{background:#fef3c7;color:#92400e;border-color:#fde68a;}
+.badge.criterio{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe;}
+[data-theme="dark"] .badge.vig{background:#0f3d24;color:#86efac;border-color:#166534;}
+[data-theme="dark"] .badge.der{background:#3d1414;color:#fca5a5;border-color:#991b1b;}
+[data-theme="dark"] .badge.trans{background:#3d3211;color:#fde68a;border-color:#92400e;}
+[data-theme="dark"] .badge.criterio{background:#1e1b4b;color:#c7d2fe;border-color:#3730a3;}
+.cite{font-size:.74rem;color:var(--muted);font-style:italic;}
+.norma-box{border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;
+  padding:.6rem .8rem;font-size:.83rem;margin:.6rem 0;}
+.hipotesis-box{border-left:4px solid var(--warn);background:var(--chip);border-radius:6px;
+  padding:.6rem .8rem;font-size:.8rem;margin:.6rem 0;}
+table.tbl{width:100%;border-collapse:collapse;font-size:.82rem;margin:.5rem 0;}
+table.tbl th,table.tbl td{border:1px solid var(--border);padding:.35rem .5rem;text-align:right;}
+table.tbl th{background:var(--chip);text-align:center;}
+table.tbl td:first-child, table.tbl th:first-child{text-align:left;}
+label.field{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.15rem;margin-top:.5rem;}
+input[type=number], input[type=text], select{
+  width:100%;padding:.4rem .5rem;border:1px solid var(--border);border-radius:6px;
+  background:var(--code);color:var(--text);font-size:.85rem;
+}
+.inline3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;}
+.inline2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.result-box{background:var(--code);border:1px dashed var(--border);border-radius:8px;
+  padding:.7rem .9rem;margin-top:.6rem;font-size:.88rem;}
+.result-box .big{font-size:1.25rem;font-weight:700;color:var(--accent2);}
+details.deep{border:1px solid var(--border);border-radius:8px;padding:.4rem .7rem;margin:.4rem 0;background:var(--panel);}
+details.deep>summary{cursor:pointer;font-weight:600;font-size:.85rem;color:var(--accent);}
+.tag-nivel{font-size:.68rem;padding:.1rem .4rem;border-radius:4px;margin-left:.4rem;vertical-align:middle;}
+.tag-basico{background:#dbeafe;color:#1e40af;}
+.tag-intermedio{background:#fef3c7;color:#92400e;}
+.tag-actuarial{background:#ede9fe;color:#5b21b6;}
+[data-theme="dark"] .tag-basico{background:#1e3a5f;color:#93c5fd;}
+[data-theme="dark"] .tag-intermedio{background:#3d3211;color:#fde68a;}
+[data-theme="dark"] .tag-actuarial{background:#2e1065;color:#d8b4fe;}
+body.hide-basico [data-nivel="basico"]{display:none;}
+body.hide-intermedio [data-nivel="intermedio"]{display:none;}
+body.hide-actuarial [data-nivel="actuarial"]{display:none;}
+mark.hl{background:#fde68a;color:#000;padding:0 2px;border-radius:3px;}
+/* ARBOL DE DECISION */
+#arbolWrap{display:flex;gap:1rem;flex-wrap:wrap;}
+#arbolPanel{flex:2;min-width:340px;}
+#arbolBread{flex:1;min-width:260px;}
+.tree-question{font-size:1rem;font-weight:600;margin-bottom:.4rem;}
+.tree-help{font-size:.8rem;color:var(--muted);margin-bottom:.8rem;}
+.tree-options{display:flex;gap:.6rem;flex-wrap:wrap;}
+.tree-options button{
+  flex:1;min-width:140px;padding:.7rem .9rem;border-radius:10px;border:1px solid var(--border);
+  background:var(--panel);cursor:pointer;font-size:.85rem;text-align:left;transition:.15s;
+}
+.tree-options button:hover{border-color:var(--accent);background:var(--chip);transform:translateY(-1px);}
+.tree-options button .k{display:block;font-weight:700;color:var(--accent);font-size:.75rem;text-transform:uppercase;}
+.breadcrumb-step{
+  display:flex;gap:.5rem;padding:.4rem .3rem;border-bottom:1px solid var(--border);font-size:.78rem;
+}
+.breadcrumb-step .q{color:var(--muted);}
+.breadcrumb-step .a{font-weight:600;color:var(--accent2);}
+.result-final{border:2px solid var(--accent2);border-radius:10px;padding:1rem;background:var(--chip);}
+.result-final h4{margin-top:0;color:var(--accent2);}
+.node-progress{font-size:.72rem;color:var(--muted);margin-bottom:.3rem;}
+.calc-link{display:inline-block;margin-top:.5rem;font-size:.78rem;background:var(--chip);
+  border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:.25rem .7rem;}
+footer.foot{text-align:center;padding:1.2rem;font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);}
+.searchhit{animation:pulse 1.2s ease-in-out 2;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.4);}50%{box-shadow:0 0 0 6px rgba(37,99,235,.15);}}
+@media print{
+  nav.sidebar,header.topbar,.no-print{display:none !important;}
+  main{padding:0;}
+  .card{box-shadow:none;border:1px solid #999;}
+  a{color:#000;}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="title">📘 Art. 33 ROSSP — Tipo de interés técnico PM Vida</span>
+  <span class="subtitle">RD 2486/1998 · Ed. v1.0 · 30 de septiembre de 2026 · José Valencia Figueroa</span>
+  <div class="grow"></div>
+  <input type="text" id="searchBox" placeholder="Buscar en el dashboard…" aria-label="Buscador">
+  <button class="btn" onclick="doSearch()">🔍 Buscar</button>
+  <button class="btn" onclick="toggleTheme()">🌗 Claro/Oscuro</button>
+  <button class="btn" onclick="printDashboard()">🖨️ Imprimir</button>
+  <button class="btn warn" onclick="resetDashboard()">↺ Reset</button>
+</header>
+<div class="layout">
+<nav class="sidebar" aria-label="Índice de navegación">
+  <div id="progressWrap"><div id="progressBar"></div></div>
+  <h4>Filtro por nivel</h4>
+  <div class="levelfilter">
+    <label><input type="checkbox" id="lvlBasico" checked onchange="applyLevelFilters()"> Básico</label>
+    <label><input type="checkbox" id="lvlIntermedio" checked onchange="applyLevelFilters()"> Intermedio</label>
+    <label><input type="checkbox" id="lvlActuarial" checked onchange="applyLevelFilters()"> Actuarial</label>
+  </div>
+  <h4>Índice</h4>
+  <ul>
+    <li><a href="#secA">A. Cabecera ejecutiva</a></li>
+    <li><a href="#secB">B. Mapa normativo/temporal</a></li>
+    <li><a href="#secC">C. Fundamentos</a></li>
+    <li><a href="#secD">D. Desglose art. 33</a></li>
+    <li><a href="#secE">E. Ejemplos A/B</a></li>
+    <li><a href="#secF">F. Casos numéricos mínimos</a></li>
+    <li><a href="#secG">G. Tipologías de producto</a></li>
+    <li><a href="#secH">H. Árbol de decisión</a></li>
+    <li><a href="#secI">I. Visualizaciones</a></li>
+    <li><a href="#secJ">J. Calculadoras A–G</a></li>
+    <li><a href="#secK">K. Riesgos y controles</a></li>
+    <li><a href="#secL">L. Autoevaluación</a></li>
+    <li><a href="#secM">M. Glosario</a></li>
+    <li><a href="#secN">N. Fuentes y trazabilidad</a></li>
+  </ul>
+</nav>
+<main id="mainContent">
+
+<section id="secA">
+<h2>A. Cabecera ejecutiva</h2>
+<div class="card">
+<p><b>Objeto:</b> el artículo 33 del Reglamento de Ordenación y Supervisión de los Seguros Privados
+(RD 2486/1998, texto consolidado BOE) fija los <b>límites máximos del tipo de interés técnico</b>
+utilizable para calcular la <b>provisión de seguros de vida</b> (provisión matemática) a efectos contables/PCEA,
+distinto del marco de valoración de provisiones técnicas de Solvencia II.</p>
+<div class="norma-box"><b>Regla marco [RD 2486/1998, art. 33.1]:</b> "El tipo de interés aplicable para el cálculo de la
+provisión de seguros de vida no podrá ser superior a los siguientes límites…" — establece un <b>techo</b>, no un tipo obligatorio único.</div>
+<p><b>Alcance temporal clave (ver Sección B):</b></p>
+<ul>
+<li><span class="badge trans">Transitorio</span> Contratos <b>anteriores a 1999</b> → Disposición Transitoria 2ª ROSSP.</li>
+<li><span class="badge vig">Vigente</span> Contratos <b>1999–2015</b> → art. 33 ROSSP clásico, con opción de migración a ETRLR vía <b>DA 5ª RD 1060/2015</b>.</li>
+<li><span class="badge vig">Vigente</span> Contratos <b>desde 2016</b> → <b>Guía Técnica 2/2016 DGSFP</b>: tipo = mín(ETRLR [+VA], tipo garantizado).</li>
+</ul>
+<div class="hipotesis-box">Este dashboard NO presenta el art. 33 como régimen universal para toda la producción actual:
+la nueva producción desde 2016 se rige por la estructura temporal de tipos de interés sin riesgo (ETRLR), y solo
+subsidiariamente remite a conceptos del art. 33 (p. ej., el tope del 33.3 sobre PB, o el fallback del 33.4).</div>
+</div>
+</section>
+
+<section id="secB">
+<h2>B. Mapa normativo y temporal</h2>
+<div class="card">
+<table class="tbl">
+<tr><th>Periodo / ámbito</th><th>Norma aplicable</th><th>Estado</th><th>Nota clave</th></tr>
+<tr><td style="text-align:left">Compromisos &lt; 1-1-1999</td><td style="text-align:left">DT 2ª ROSSP</td><td><span class="badge trans">Transitorio</span></td>
+<td style="text-align:left">Se mantiene tipo de la prima; RRAC aplica igualmente</td></tr>
+<tr><td style="text-align:left">Compromisos 1999–2015</td><td style="text-align:left">Art. 33 ROSSP (33.1/33.2/33.3/33.4)</td><td><span class="badge vig">Vigente</span></td>
+<td style="text-align:left">Opción de migrar a ETRLR vía DA 5ª (irreversible)</td></tr>
+<tr><td style="text-align:left">Migración 1999–2015 → ETRLR</td><td style="text-align:left">DA 5ª RD 1060/2015</td><td><span class="badge vig">Vigente</span></td>
+<td style="text-align:left">Plazo máx. 10 años desde 31-12-2015 (vence 31-12-2025); dotación lineal</td></tr>
+<tr><td style="text-align:left">Nueva producción ≥ 2016</td><td style="text-align:left">Guía Técnica 2/2016 DGSFP</td><td><span class="badge vig">Vigente</span></td>
+<td style="text-align:left">mín(ETRLR [+VA], tipo garantizado)</td></tr>
+</table>
+<div class="hipotesis-box">⚠️ <b>Cuestión que requiere validación:</b> el plazo de 10 años de la DA 5ª (contado desde 31-12-2015) se cumplió el
+31-12-2025. Este dashboard se sella a 30 de septiembre de 2026. No se ha localizado en fuente oficial una prórroga expresa de dicho plazo;
+si su entidad mantiene pólizas en fase de adaptación more allá de esa fecha, debe verificarse contra la última Resolución DGSFP
+vigente en la fecha de cierre correspondiente. Dato no confirmado adicionalmente: no se utiliza como fundamento único de conclusión.</div>
+<p class="cite">[RD 2486/1998, art. 33 y DT 2ª] · [RD 1060/2015, DA 5ª y arts. 54/57] · [Guía Técnica 2/2016 DGSFP]</p>
+</div>
+</section>
+
+<section id="secC">
+<h2>C. Fundamentos técnicos</h2>
+<div class="grid2">
+<div class="card" data-nivel="basico">
+<h3>1. Intuición</h3>
+<p>El tipo de interés técnico es la "tasa de descuento" que el asegurador usa para calcular hoy cuánto dinero necesita
+reservar (provisión matemática) para pagar las prestaciones futuras garantizadas. Cuanto <b>más alto</b> el tipo, <b>menor</b>
+la provisión (se descuenta más fuerte); cuanto más bajo, mayor la provisión. El art. 33 pone un <b>techo</b> a ese tipo para
+evitar que las entidades infra-reserven.</p>
+</div>
+<div class="card" data-nivel="intermedio">
+<h3>2. Mecánica</h3>
+<p>El art. 33 organiza los límites en función de: (i) la divisa del contrato (euros vs. otra divisa);
+(ii) si el tipo garantizado es de corto plazo (≤1 año) o de largo plazo; (iii) si existe o no inmunización financiera
+(activos asignados y adecuados); y (iv) reglas transversales de tope (33.3, ligado a PB) y fallback (33.4).</p>
+</div>
+<div class="card" data-nivel="actuarial">
+<h3>3-4. Cálculo e interpretación actuarial</h3>
+<p>Cada régimen (Tipo DGS, semi-matching, CFM, Duration Matching, ETRLR) genera una <b>curva de descuento distinta</b>,
+con impacto directo en la PM, en el resultado técnico-financiero y en el capital/FP. El riesgo de cálculo y de ALM
+crece sensiblemente en los regímenes de inmunización (33.2) por la exigencia de verificación trimestral.</p>
+</div>
+<div class="card" data-nivel="actuarial">
+<h3>5. Defensa técnica</h3>
+<p>Toda aplicación del art. 33 debe estar documentada en la <b>base técnica</b> [RD 2486/1998, art. 78.1], con evidencia
+de: método elegido, verificación de duraciones/TIR, registro de inversiones asignadas [art. 52 bis] y, en su caso,
+prueba de los requisitos de la Orden EHA 339/2007 (inmunización).</p>
+</div>
+</div>
+</section>
+
+<section id="secD">
+<h2>D. Desglose completo del art. 33 ROSSP</h2>
+<div class="card">
+<details class="deep" open><summary>Art. 33.1.a) Seguros en euros <span class="tag-nivel tag-intermedio">Intermedio</span></summary>
+<p><b>a.1º Tipo DGS:</b> mín[ 60%·i(deuda pública general) + 50%·(i_DGS(t-1) − r_euroswap11a) ; 60%·i(deuda pública 20a+) ].
+Publicado anualmente por la DGSFP. <span class="badge criterio">Criterio normativo confirmado</span></p>
+<p><b>a.2º Semi-matching:</b> si duración financiera de cobros ≥ duración de pagos → tipo DGS del año de origen;
+si es inferior → 2 tramos (tipo DGS origen + tipo DGS vigente a partir del punto de corte).</p>
+<p class="cite">[RD 2486/1998, art. 33.1.a.1º y a.2º]</p>
+</details>
+<details class="deep"><summary>Art. 33.1.b) Seguros en moneda distinta al euro <span class="tag-nivel tag-actuarial">Actuarial</span></summary>
+<p>Régimen espejo del apartado a), referido a la deuda pública y curva swap del Estado emisor de la divisa correspondiente.</p>
+<p class="cite">[RD 2486/1998, art. 33.1.b]</p>
+</details>
+<details class="deep"><summary>Art. 33.1.c) Tipo garantizado ≤ 1 año <span class="tag-nivel tag-basico">Básico</span></summary>
+<p>El límite es directamente el tipo de interés garantizado en cada periodo (tipos "precomunicados").</p>
+<p class="cite">[RD 2486/1998, art. 33.1.c]</p>
+</details>
+<details class="deep"><summary>Art. 33.1, último párrafo — Rentabilidad Real (RRAC) <span class="tag-nivel tag-actuarial">Actuarial</span></summary>
+<p>Si la rentabilidad real obtenida en el ejercicio por las inversiones asignadas es inferior al tipo técnico medio de
+operaciones sin asignación específica, la PM se calcula con la rentabilidad realmente obtenida — salvo que la entidad
+acredite ante la DGSFP la suficiencia futura del rendimiento.</p>
+<p class="cite">[RD 2486/1998, art. 33.1 in fine]</p>
+</details>
+<details class="deep"><summary>Art. 33.2 — Inmunización (TIR de inversiones asignadas) <span class="tag-nivel tag-actuarial">Actuarial</span></summary>
+<p>a) Cash Flow Matching (coincidencia de flujos de cobro/pago); b) Duration Matching (relación de valores actuales
+activo/pasivo dentro de márgenes). Exige base técnica expresa, registro de inversiones y verificación periódica
+(Orden EHA 339/2007 y modificaciones posteriores ECC 335/2012 y ECC 2150/2012).</p>
+<p class="cite">[RD 2486/1998, art. 33.2.a y 33.2.b]</p>
+</details>
+<details class="deep"><summary>Art. 33.3 — Tope adicional en PB y en 33.2.b <span class="tag-nivel tag-actuarial">Actuarial</span></summary>
+<p>En seguros con participación en beneficios, y en los calculados según el 33.2.b, la PM no puede calcularse a un
+tipo superior al utilizado para el cálculo de la <b>prima</b>.</p>
+<p class="cite">[RD 2486/1998, art. 33.3]</p>
+</details>
+<details class="deep"><summary>Art. 33.4 — Fallback al régimen general <span class="tag-nivel tag-actuarial">Actuarial</span></summary>
+<p>Si se incumplen los requisitos que permiten aplicar el art. 33.2, el tipo técnico pasa a ser, de forma inmediata,
+el del art. 33.1. Impacto contable potencialmente muy relevante.</p>
+<p class="cite">[RD 2486/1998, art. 33.4]</p>
+</details>
+</div>
+</section>
+
+<section id="secE">
+<h2>E. Ejemplos A/B por casuística</h2>
+<div class="grid2">
+<div class="card" data-nivel="intermedio">
+<h3>Ejemplo A — Semi-matching SIN gap de duraciones</h3>
+<p><i>Ejemplo hipotético exclusivamente didáctico.</i> Póliza con capital diferido C=100.000€, duración financiera de
+cobros Dc=12 años ≥ duración de pagos Dp=10 años. Se aplica el Tipo DGS del año de origen (i0=1,83%) a todo el horizonte.</p>
+<p>VA = 100.000 / (1,0183)^10 = <b>83.414,69 €</b> (ver Calculadora B con Dc=12, Dp=10).</p>
+</div>
+<div class="card" data-nivel="intermedio">
+<h3>Ejemplo B — Semi-matching CON gap de duraciones</h3>
+<p><i>Ejemplo hipotético exclusivamente didáctico.</i> Mismo capital y Dp=10 años, pero Dc=6 años &lt; Dp.
+Descuento en 2 tramos: i0=1,83% en [0,6] e i1=2,95% (tipo DGS vigente) en [6,10].</p>
+<p>VA = 100.000 / [(1,0183)^6 × (1,0295)^4] = <b>79.843,60 €</b> (ver Calculadora B con Dc=6, Dp=10).</p>
+<p class="cite">Impacto del gap: −3.571,09 € de provisión respecto al escenario sin gap (mayor tipo efectivo por el 2º tramo más alto).</p>
+</div>
+</div>
+</section>
+
+<section id="secF">
+<h2>F. Casos numéricos mínimos (resumen — desarrollo completo en Excel)</h2>
+<div class="card">
+<table class="tbl">
+<tr><th>Caso</th><th>Régimen art. 33</th><th>Resultado clave</th></tr>
+<tr><td style="text-align:left">VA_5_10_20</td><td style="text-align:left">33.1.a.1 (Tipo DGS)</td><td>Sensibilidad de VA a distintos plazos (5/10/20a)</td></tr>
+<tr><td style="text-align:left">Sens_50_100bp</td><td style="text-align:left">Transversal</td><td>Shock ±50/100pb sobre tipo técnico → ΔPM</td></tr>
+<tr><td style="text-align:left">SemiMatching</td><td style="text-align:left">33.1.a.2</td><td>Ejemplos A/B (ver Sección E)</td></tr>
+<tr><td style="text-align:left">CF_Matching / Dur_Matching</td><td style="text-align:left">33.2.a / 33.2.b</td><td>TIR de inmunización vs. fallback 33.4</td></tr>
+<tr><td style="text-align:left">Rentabilidad_Real</td><td style="text-align:left">33.1 in fine</td><td>Activación de cláusula RRAC</td></tr>
+<tr><td style="text-align:left">Pre1999 / Pre2016 / Post2016</td><td style="text-align:left">DT2ª / 33 clásico / GT 2/2016</td><td>Comparativa de regímenes por cohorte</td></tr>
+<tr><td style="text-align:left">Fallback_33_4</td><td style="text-align:left">33.4</td><td>Salto de tipo al incumplir inmunización</td></tr>
+</table>
+<p class="cite">Desarrollo íntegro, fórmulas nativas y recálculo Python: fichero <code>ejemplos_articulo_33_rossp.xlsx</code>
+(disponible bajo solicitud expresa "dashboard + excel").</p>
+</div>
+</section>
+
+<section id="secG">
+<h2>G. Tipologías de producto y encaje típico en el art. 33</h2>
+<div class="card">
+<table class="tbl">
+<tr><th>Tipología</th><th>Encaje típico</th><th>Observación</th></tr>
+<tr><td style="text-align:left">Rentas vitalicias/temporales (prima única)</td><td style="text-align:left">33.1.a.1 o 33.2</td><td>Duraciones largas; frecuente inmunización</td></tr>
+<tr><td style="text-align:left">Ahorro a prima periódica</td><td style="text-align:left">33.1.a.2 (semi-matching)</td><td>Flujos de primas futuras como "cobros"</td></tr>
+<tr><td style="text-align:left">PPA / seguros con tipo revisable anual</td><td style="text-align:left">33.1.c</td><td>Tipo precomunicado ≤1 año</td></tr>
+<tr><td style="text-align:left">Unit-linked (riesgo trasladado)</td><td style="text-align:left">Fuera de ámbito PM art.33*</td><td>*Cuando no hay garantía ni PM; si hay garantía, sí aplica</td></tr>
+<tr><td style="text-align:left">PB (participación en beneficios)</td><td style="text-align:left">33.2 + tope 33.3</td><td>Tope al tipo de prima</td></tr>
+<tr><td style="text-align:left">Nueva producción individual/colectiva ≥2016</td><td style="text-align:left">GT 2/2016 (ETRLR)</td><td>mín(ETRLR[+VA], garantizado)</td></tr>
+</table>
+</div>
+</section>
+
+<section id="secH">
+<h2>H. Árbol de decisión interactivo</h2>
+<div class="card">
+<p class="cite">Responda a cada pregunta pulsando la opción correspondiente. El árbol le guiará hasta el apartado exacto
+del art. 33 ROSSP (o norma conexa) aplicable a su caso, y le enlazará directamente a la calculadora relevante (A–G).</p>
+<div id="arbolWrap">
+  <div id="arbolPanel"></div>
+  <div id="arbolBread"></div>
+</div>
+</div>
+</section>
+
+<section id="secI">
+<h2>I. Visualizaciones</h2>
+<div class="grid2">
+<div class="card">
+<h3>Línea temporal normativa</h3>
+<svg viewBox="0 0 640 160" width="100%" height="160" role="img" aria-label="Línea temporal normativa art. 33 ROSSP">
+  <line x1="20" y1="80" x2="620" y2="80" stroke="var(--muted)" stroke-width="2"/>
+  <circle cx="60" cy="80" r="6" fill="#b45309"/><text x="60" y="105" font-size="11" text-anchor="middle" fill="var(--text)">1999</text>
+  <text x="60" y="55" font-size="10" text-anchor="middle" fill="var(--text)">ROSSP entra en vigor</text>
+  <circle cx="320" cy="80" r="6" fill="#0d4f8b"/><text x="320" y="105" font-size="11" text-anchor="middle" fill="var(--text)">31-12-2015</text>
+  <text x="320" y="55" font-size="10" text-anchor="middle" fill="var(--text)">RD 1060/2015 · DA 5ª</text>
+  <circle cx="400" cy="80" r="6" fill="#0a7a5f"/><text x="400" y="105" font-size="11" text-anchor="middle" fill="var(--text)">1-1-2016</text>
+  <text x="400" y="55" font-size="10" text-anchor="middle" fill="var(--text)">GT 2/2016 · ETRLR</text>
+  <circle cx="560" cy="80" r="6" fill="#b91c1c"/><text x="560" y="105" font-size="11" text-anchor="middle" fill="var(--text)">31-12-2025</text>
+  <text x="560" y="55" font-size="10" text-anchor="middle" fill="var(--text)">Fin plazo máx. DA 5ª (10a)</text>
+</svg>
+<p class="cite">[RD 2486/1998] · [RD 1060/2015, DA 5ª] · [Guía Técnica 2/2016 DGSFP]</p>
+</div>
+<div class="card">
+<h3>Comparativa ilustrativa de tipos técnicos (ejemplo hipotético)</h3>
+<svg viewBox="0 0 400 220" width="100%" height="220" role="img" aria-label="Comparativa de tipos">
+  <line x1="40" y1="10" x2="40" y2="190" stroke="var(--muted)"/>
+  <line x1="40" y1="190" x2="380" y2="190" stroke="var(--muted)"/>
+  <text x="10" y="15" font-size="9" fill="var(--text)">4%</text>
+  <text x="10" y="105" font-size="9" fill="var(--text)">2%</text>
+  <text x="10" y="190" font-size="9" fill="var(--text)">0%</text>
+  <rect x="70" y="127" width="40" height="63" fill="#0d4f8b"/><text x="90" y="205" font-size="9" text-anchor="middle" fill="var(--text)">Tipo DGS</text>
+  <rect x="150" y="99" width="40" height="91" fill="#0a7a5f"/><text x="170" y="205" font-size="9" text-anchor="middle" fill="var(--text)">CFM/TIR</text>
+  <rect x="230" y="118" width="40" height="72" fill="#b45309"/><text x="250" y="205" font-size="9" text-anchor="middle" fill="var(--text)">ETRLR+VA</text>
+  <rect x="310" y="55" width="40" height="135" fill="#5b21b6"/><text x="330" y="205" font-size="9" text-anchor="middle" fill="var(--text)">Garantizado</text>
+</svg>
+<p class="cite">Valores ilustrativos exclusivamente didácticos; no representan tipos publicados a la fecha de consulta.</p>
+</div>
+</div>
+</section>
+
+<section id="secJ">
+<h2>J. Calculadoras interactivas A–G</h2>
+<p class="cite">Todas las calculadoras usan base anual simple (t en años) y descuento (1+i)^t, salvo indicación contraria.
+Convención de tipo por defecto: efectiva anual. Ejemplos con valores prefijados son <b>hipotéticos, exclusivamente didácticos</b>.</p>
+
+<div class="card" id="calcA" data-nivel="actuarial">
+<h3>Calculadora A — Tipo DGS [art. 33.1.a.1º / b.1º]</h3>
+<div class="norma-box">Fórmula: Tipo = mín[ 0,60·i_DP_general + 0,50·(i_DGS(t-1) − r_euroswap11a) ; 0,60·i_DP_20a+ ]</div>
+<div class="inline3">
+  <div><label class="field">i medio deuda pública general (%)</label><input type="number" id="A_rgen" value="3.30" step="0.01" oninput="calcA()"></div>
+  <div><label class="field">Tipo DGS ejercicio anterior (%)</label><input type="number" id="A_idgsprev" value="1.83" step="0.01" oninput="calcA()"></div>
+  <div><label class="field">Euroswap 11a, 31-dic ej. anterior (%)</label><input type="number" id="A_rswap11" value="2.50" step="0.01" oninput="calcA()"></div>
+</div>
+<div class="inline3">
+  <div><label class="field">i medio deuda pública 20a+ (%)</label><input type="number" id="A_r20" value="3.10" step="0.01" oninput="calcA()"></div>
+</div>
+<div id="A_out"></div>
+<button class="btn no-print" onclick="exportA()">⬇️ Exportar CSV</button>
+</div>
+
+<div class="card" id="calcB" data-nivel="actuarial">
+<h3>Calculadora B — Semi-matching [art. 33.1.a.2º]</h3>
+<div class="norma-box">Si Dc ≥ Dp → tramo único a i0. Si Dc &lt; Dp → 2 tramos: i0 en [0,Dc], i1 en [Dc,Dp].</div>
+<div class="inline3">
+  <div><label class="field">Duración financiera cobros Dc (años)</label><input type="number" id="B_dc" value="6" step="1" oninput="calcB()"></div>
+  <div><label class="field">Duración financiera pagos Dp (años)</label><input type="number" id="B_dp" value="10" step="1" oninput="calcB()"></div>
+  <div><label class="field">Capital/flujo C (€)</label><input type="number" id="B_cap" value="100000" step="1000" oninput="calcB()"></div>
+</div>
+<div class="inline2">
+  <div><label class="field">Tipo DGS año origen i0 (%)</label><input type="number" id="B_i0" value="1.83" step="0.01" oninput="calcB()"></div>
+  <div><label class="field">Tipo DGS vigente i1 (2º tramo) (%)</label><input type="number" id="B_i1" value="2.95" step="0.01" oninput="calcB()"></div>
+</div>
+<div id="B_out"></div>
+<button class="btn no-print" onclick="exportB()">⬇️ Exportar CSV</button>
+</div>
+
+<div class="card" id="calcC" data-nivel="actuarial">
+<h3>Calculadora C — Rentabilidad Real / RRAC [art. 33.1 in fine]</h3>
+<div class="norma-box">Si Rreal &lt; i_medio_sin_asignación Y no acreditado ante DGSFP → tipo = Rreal. En caso contrario → tipo = i_medio.</div>
+<div class="inline3">
+  <div><label class="field">Rentabilidad real obtenida (%)</label><input type="number" id="C_rreal" value="1.65" step="0.01" oninput="calcC()"></div>
+  <div><label class="field">Tipo técnico medio sin asignación (%)</label><input type="number" id="C_imedio" value="2.10" step="0.01" oninput="calcC()"></div>
+  <div><label class="field">¿Acreditado ante DGSFP?</label>
+    <select id="C_acred" onchange="calcC()"><option value="no">No</option><option value="si">Sí</option></select></div>
+</div>
+<div id="C_out"></div>
+<button class="btn no-print" onclick="exportC()">⬇️ Exportar CSV</button>
+</div>
+
+<div class="card" id="calcD" data-nivel="actuarial">
+<h3>Calculadora D — Inmunización CFM/Duration + tope 33.3 + fallback 33.4</h3>
+<div class="norma-box">Tipo = TIR; si PB/33.2.b → mín(TIR, i_prima); si incumple ≥2 trimestres → fallback a tipo art.33.1.</div>
+<div class="inline3">
+  <div><label class="field">TIR inversiones asignadas (%)</label><input type="number" id="D_tir" value="3.45" step="0.01" oninput="calcD()"></div>
+  <div><label class="field">Tipo usado en cálculo de la prima (%)</label><input type="number" id="D_iprima" value="3.00" step="0.01" oninput="calcD()"></div>
+  <div><label class="field">Tipo fallback art. 33.1 (%)</label><input type="number" id="D_tipo331" value="1.83" step="0.01" oninput="calcD()"></div>
+</div>
+<div class="inline2">
+  <div><label class="field">¿Tope 33.3 (PB / 33.2.b)?</label>
+    <select id="D_pb" onchange="calcD()"><option value="si">Sí</option><option value="no">No</option></select></div>
+  <div><label class="field">¿Incumple ≥2 trimestres (fallback 33.4)?</label>
+    <select id="D_incumple" onchange="calcD()"><option value="no">No</option><option value="si">Sí</option></select></div>
+</div>
+<div id="D_out"></div>
+<button class="btn no-print" onclick="exportD()">⬇️ Exportar CSV</button>
+</div>
+
+<div class="card" id="calcE" data-nivel="actuarial">
+<h3>Calculadora E — ETRLR + VA + mín(garantizado) [Guía Técnica 2/2016]</h3>
+<div class="norma-box">Tipo máximo = mín( ETRLR + VA (si aplica) ; tipo de interés garantizado del compromiso ).</div>
+<div class="inline3">
+  <div><label class="field">ETRLR en punto de duración relevante (%)</label><input type="number" id="E_rcurva" value="2.80" step="0.01" oninput="calcE()"></div>
+  <div><label class="field">Ajuste por Volatilidad VA (puntos básicos)</label><input type="number" id="E_va" value="15" step="1" oninput="calcE()"></div>
+  <div><label class="field">¿Aplica VA (coherente con Solvencia II)?</label>
+    <select id="E_usava" onchange="calcE()"><option value="si">Sí</option><option value="no">No</option></select></div>
+</div>
+<div class="inline2">
+  <div><label class="field">Tipo de interés garantizado del compromiso (%)</label><input type="number" id="E_igar" value="3.00" step="0.01" oninput="calcE()"></div>
+</div>
+<div id="E_out"></div>
+<button class="btn no-print" onclick="exportE()">⬇️ Exportar CSV</button>
+</div>
+
+<div class="card" id="calcF" data-nivel="basico">
+<h3>Calculadora F — Conversión Nominal → Efectiva (convención de tipo)</h3>
+<div class="norma-box">i_eff = (1 + j/m)^m − 1. Por defecto, todo el dashboard usa la convención "Efectiva anual".</div>
+<div class="inline3">
+  <div><label class="field">Convención</label>
+    <select id="F_conv" onchange="calcF()"><option value="efectiva">Efectiva anual (default)</option><option value="nominal">Nominal anual</option></select></div>
+  <div><label class="field">Tipo input j (%)</label><input type="number" id="F_j" value="3.00" step="0.01" oninput="calcF()"></div>
+  <div><label class="field">m capitalizaciones/año</label>
+    <select id="F_m" onchange="calcF()"><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="12" selected>12</option></select></div>
+</div>
+<div id="F_out"></div>
+<button class="btn no-print" onclick="exportF()">⬇️ Exportar CSV</button>
+</div>
+
+<div class="card" id="calcG" data-nivel="actuarial">
+<h3>Calculadora G — Dotación lineal DA 5ª RD 1060/2015 (migración a ETRLR)</h3>
+<div class="norma-box">Dotación anual = (PM_ETRLR − PM_art.33) / 10. PM_actual = PM_art.33 + dotación_anual × años transcurridos (máx. 10).</div>
+<div class="inline3">
+  <div><label class="field">PM bajo art. 33 (Tipo DGS) (€)</label><input type="number" id="G_pm33" value="950000" step="1000" oninput="calcG()"></div>
+  <div><label class="field">PM bajo ETRLR objetivo (€)</label><input type="number" id="G_pmetrlr" value="1000000" step="1000" oninput="calcG()"></div>
+  <div><label class="field">Años transcurridos desde 31-12-2015</label><input type="number" id="G_anios" value="8" step="1" oninput="calcG()"></div>
+</div>
+<div class="inline2">
+  <div><label class="field">Plazo máximo (años)</label><input type="number" id="G_total" value="10" step="1" oninput="calcG()"></div>
+</div>
+<div id="G_out"></div>
+<button class="btn no-print" onclick="exportG()">⬇️ Exportar CSV</button>
+</div>
+</section>
+<section id="secK">
+<h2>K. Riesgos, controles y evidencia</h2>
+<div class="card">
+<table class="tbl">
+<tr><th>Régimen</th><th>Riesgo principal</th><th>Control / evidencia esperada</th></tr>
+<tr><td style="text-align:left">33.1.a.1 (Tipo DGS)</td><td style="text-align:left">Normal (prescrito y publicado)</td><td style="text-align:left">Verificar tipo publicado DGSFP del ejercicio</td></tr>
+<tr><td style="text-align:left">33.1.a.2 (Semi-matching)</td><td style="text-align:left">ALM medio/alto; riesgo de cálculo alto</td><td style="text-align:left">Verificación punto de corte, duraciones cobro/pago, no compensación entre pólizas</td></tr>
+<tr><td style="text-align:left">33.1.c (precomunicado)</td><td style="text-align:left">Normal, salvo suelo &gt; Tipo DGS</td><td style="text-align:left">Revisión condicionados generales/particulares</td></tr>
+<tr><td style="text-align:left">33.2 (CFM/Duration)</td><td style="text-align:left">Regulatorio alto; ALM alto</td><td style="text-align:left">Verificación trimestral (Q3/Q4), aptitud de activos OM 20-feb-2007, registro de inversiones</td></tr>
+<tr><td style="text-align:left">RRAC (33.1 in fine)</td><td style="text-align:left">Regulatorio alto si RRAC&lt;IMPM</td><td style="text-align:left">Revisión RRAC ejercicio en curso y prospectivo</td></tr>
+<tr><td style="text-align:left">ETRLR / GT 2/2016</td><td style="text-align:left">Normal; consistencia con Solvencia II</td><td style="text-align:left">Curva coherente con la usada en SII; coherencia del VA</td></tr>
+</table>
+</div>
+</section>
+
+<section id="secL">
+<h2>L. Autoevaluación</h2>
+<div id="quizContainer"></div>
+</section>
+
+<section id="secM">
+<h2>M. Glosario</h2>
+<div class="card grid2">
+<div>
+<p><b>PM:</b> Provisión Matemática (provisión de seguros de vida).</p>
+<p><b>ETRLR:</b> Estructura Temporal de Tipos de Interés sin Riesgo (curva EIOPA).</p>
+<p><b>VA:</b> Ajuste por Volatilidad (Volatility Adjustment), art. 57 RD 1060/2015.</p>
+<p><b>TIR:</b> Tasa Interna de Rentabilidad de las inversiones asignadas.</p>
+<p><b>RRAC:</b> Rentabilidad Real de Activos y Cartera (cláusula del art. 33.1 in fine).</p>
+</div>
+<div>
+<p><b>CFM:</b> Cash Flow Matching (inmunización por coincidencia de flujos), art. 33.2.a.</p>
+<p><b>Duration Matching:</b> Inmunización por relación de valores actuales activo/pasivo, art. 33.2.b.</p>
+<p><b>Semi-matching:</b> Comparación de duraciones financieras de cobros vs. pagos, art. 33.1.a.2º.</p>
+<p><b>DGS/DGSFP:</b> Dirección General de Seguros y Fondos de Pensiones.</p>
+<p><b>DA 5ª:</b> Disposición Adicional Quinta del RD 1060/2015.</p>
+</div>
+</div>
+</section>
+
+<section id="secN">
+<h2>N. Fuentes y trazabilidad</h2>
+<div class="card">
+<h4>(1) Legislación</h4>
+<ul>
+<li>Real Decreto 2486/1998, de 20 de noviembre, ROSSP (texto consolidado BOE) — arts. 29, 32, 33, 34-37, 46-47, 49, 52 bis, 77, 78. Fuente: BOE-A-1998-27047. Consultado: 30 de septiembre de 2026.</li>
+<li>Real Decreto 1060/2015, de 20 de noviembre — Disposición Adicional 5ª, arts. 54 y 57. Fuente: BOE-A-2015-13057. Consultado: 30 de septiembre de 2026.</li>
+<li>Ley 20/2015, de 14 de julio, LOSSEAR (marco general).</li>
+</ul>
+<h4>(2) Resoluciones</h4>
+<ul>
+<li>Resolución de 15 de enero de 2016, DGSFP — tipo máximo cálculo contable PM Vida, ejercicio 2016 (detalla método lineal DA 5ª). Fuente: BOE-A-2016-722.</li>
+<li>Resoluciones anuales DGSFP publicando el Tipo DGS del ejercicio (p. ej. 2,18% en 2024; 1,83% en 2025, según material formativo aportado).</li>
+</ul>
+<h4>(3) Órdenes</h4>
+<ul>
+<li>Orden EHA 339/2007, de 16 de febrero, sobre requisitos de inmunización (modificada por ECC 335/2012 y ECC 2150/2012).</li>
+</ul>
+<h4>(4) Guías supervisoras</h4>
+<ul>
+<li>Guía Técnica 2/2016 DGSFP — Nueva producción desde 2016 (ETRLR + VA + mín garantizado).</li>
+</ul>
+<h4>(5) EIOPA</h4>
+<ul>
+<li>Curva de tipos libres de riesgo (Risk-Free Rate term structures), publicaciones mensuales EIOPA — insumo de la ETRLR.</li>
+</ul>
+<h4>(6) Material formativo</h4>
+<ul>
+<li>Documento formativo interno "articulo_33_rossp_formacion.pdf" — diapositivas 10, 13-21 (Inmunización, Entorno de Tipos, ALM Contable), aportado por el usuario.</li>
+</ul>
+<h4>(7) Fuentes de producto</h4>
+<ul>
+<li>No se han utilizado datos reales de entidades. Todos los ejemplos numéricos son hipotéticos y exclusivamente didácticos.</li>
+</ul>
+<div class="hipotesis-box">Control de calidad: recálculo independiente de las 7 calculadoras realizado en Python (Code Interpreter) previamente
+a su implementación en JavaScript; resultados coincidentes (ver historial de verificación). Cuestión pendiente de validación:
+vigencia de la DA 5ª más allá del 31-12-2025 (ver Sección B).</div>
+</div>
+</section>
+
+</main>
+</div>
+<footer class="foot">
+Dashboard generado para José Valencia Figueroa · Versión v1.0 · Sellado el 30 de septiembre de 2026 ·
+Fuente principal: RD 2486/1998 (ROSSP), art. 33 y conexos · Uso exclusivamente formativo/técnico, no sustituye asesoramiento jurídico.
+</footer>
+<script>
+/* ===================== ARBOL DE DECISION ART. 33 ROSSP ===================== */
+const ARBOL = {
+  start: "n_fecha",
+  nodes: {
+    n_fecha: {
+      q: "¿Cuándo se asumió el compromiso (fecha de efecto de la póliza / entrada en vigor)?",
+      help: "El régimen temporal aplicable depende de la fecha de asunción del compromiso. El ROSSP entró en vigor en 1999.",
+      options: [
+        {k:"Antes de 1-1-1999", to:"n_pre1999"},
+        {k:"Entre 1999 y 31-12-2015", to:"n_pre2016"},
+        {k:"Desde 1-1-2016 (nueva producción)", to:"n_post2016"}
+      ]
+    },
+    n_pre1999: {
+      q: "Contrato anterior a la entrada en vigor del ROSSP (1999).",
+      help: "Aplica la Disposición Transitoria 2ª ROSSP: se mantiene el tipo técnico de la prima, salvo excesos que exigen asignación de inversiones; y aplica igualmente la cláusula de Rentabilidad Real (último párrafo del art. 33.1).",
+      options: [
+        {k:"Ver resultado", to:"r_pre1999"}
+      ]
+    },
+    n_pre2016: {
+      q: "Contrato asumido entre el 1-1-1999 y el 31-12-2015. ¿La entidad ha optado por adaptarse a la ETRLR (DA 5ª RD 1060/2015)?",
+      help: "La DA 5ª RD 1060/2015 permite, solo para pólizas que venían usando 33.1.a.1º / 33.1.b.1º (Tipo DGS), optar por migrar a la estructura temporal de tipos de interés sin riesgo (art. 54 RD 1060/2015), con dotación adicional lineal en máx. 10 años desde 31-12-2015.",
+      options: [
+        {k:"No ha optado (sigue en art. 33 ROSSP clásico)", to:"n_moneda"},
+        {k:"Sí ha optado por ETRLR (DA 5ª)", to:"r_da5"}
+      ]
+    },
+    n_post2016: {
+      q: "Nueva producción desde 1-1-2016. Se aplica la Guía Técnica 2/2016 DGSFP.",
+      help: "El tipo máximo es el resultante de la ETRLR (con VA si la entidad también lo usa a efectos de Solvencia II), y en todo caso el MENOR entre ese tipo y el tipo de interés garantizado del compromiso.",
+      options: [
+        {k:"Ver resultado", to:"r_post2016_pre"}
+      ]
+    },
+    r_post2016_pre: {
+      q: "¿La entidad aplica Ajuste por Volatilidad (VA) a efectos de Solvencia II para esta cartera?",
+      help: "El VA solo puede incorporarse al tipo técnico contable si la entidad también lo aplica en la valoración de provisiones técnicas de Solvencia II [Guía Técnica 2/2016 DGSFP].",
+      options:[
+        {k:"Sí, aplica VA", to:"r_post2016_va"},
+        {k:"No aplica VA", to:"r_post2016_sinva"}
+      ]
+    },
+    n_moneda: {
+      q: "¿El seguro está expresado en euros o en moneda distinta al euro?",
+      help: "El art. 33.1 distingue el apartado a) [euros] del apartado b) [moneda distinta al euro], con reglas espejo pero referidas a la deuda pública del Estado emisor de esa moneda.",
+      options: [
+        {k:"Euros [art. 33.1.a]", to:"n_tipo_garant_periodo_eur"},
+        {k:"Moneda distinta al euro [art. 33.1.b]", to:"n_tipo_garant_periodo_fx"}
+      ]
+    },
+    n_tipo_garant_periodo_eur: {
+      q: "¿El tipo de interés garantizado del contrato se fijó para un periodo NO superior al año (tipo precomunicado / revisable anual o inferior)?",
+      help: "Si es así, se aplica directamente el art. 33.1.c) con independencia del resto de reglas del apartado a).",
+      options: [
+        {k:"Sí, tipo fijado ≤ 1 año", to:"r_33_1_c"},
+        {k:"No, tipo garantizado a más largo plazo", to:"n_inmunizacion_eur"}
+      ]
+    },
+    n_tipo_garant_periodo_fx: {
+      q: "¿El tipo de interés garantizado del contrato se fijó para un periodo NO superior al año?",
+      help: "Regla espejo del art. 33.1.b, remitiendo también en su caso al 33.1.c).",
+      options: [
+        {k:"Sí, tipo fijado ≤ 1 año", to:"r_33_1_c"},
+        {k:"No, tipo garantizado a más largo plazo", to:"n_inmunizacion_fx"}
+      ]
+    },
+    n_inmunizacion_eur: {
+      q: "¿La entidad tiene inversiones específicamente asignadas y adecuadas a estas pólizas, con base técnica que recoja la TIR de dichas inversiones (art. 33.2)?",
+      help: "El art. 33.2 permite un tipo en función de la TIR de las inversiones asignadas, sujeto a que se cumplan los requisitos y márgenes de adecuación (Orden EHA 339/2007 y modificaciones).",
+      options: [
+        {k:"Sí, régimen de inmunización art. 33.2", to:"n_inmun_tipo_eur"},
+        {k:"No, régimen general art. 33.1.a", to:"n_semimatch_eur"}
+      ]
+    },
+    n_inmunizacion_fx: {
+      q: "¿La entidad aplica el régimen de inmunización del art. 33.2 (TIR de inversiones asignadas) para esta cartera en moneda distinta al euro?",
+      options: [
+        {k:"Sí, art. 33.2", to:"n_inmun_tipo_fx"},
+        {k:"No, régimen general art. 33.1.b", to:"r_33_1_b1"}
+      ]
+    },
+    n_inmun_tipo_eur: {
+      q: "¿Qué criterio de adecuación de inversiones sustenta la TIR (art. 33.2.a/b)?",
+      help: "a) Coincidencia de flujos de cobro y pago (Cash Flow Matching); b) Relación de valores actuales activo/pasivo dentro de márgenes (Duration Matching).",
+      options: [
+        {k:"a) Cash Flow Matching (33.2.a)", to:"n_cfm_check_eur"},
+        {k:"b) Duration Matching (33.2.b)", to:"n_cfm_check_eur"}
+      ]
+    },
+    n_inmun_tipo_fx: {
+      q: "¿Qué criterio de adecuación de inversiones sustenta la TIR (art. 33.2.a/b)?",
+      options: [
+        {k:"a) Cash Flow Matching (33.2.a)", to:"n_cfm_check_fx"},
+        {k:"b) Duration Matching (33.2.b)", to:"n_cfm_check_fx"}
+      ]
+    },
+    n_cfm_check_eur: {
+      q: "¿Se han verificado y cumplido los requisitos de inmunización (OM 20-feb-2007 y modificaciones) durante, al menos, los DOS últimos trimestres consecutivos?",
+      help: "Si se incumple durante dos trimestres consecutivos, el art. 33.4 obliga a recalcular con el régimen del art. 33.1 (fallback).",
+      options: [
+        {k:"Sí, cumplidos 2 trimestres", to:"n_pb_check_eur"},
+        {k:"No, incumplimiento ≥2 trimestres", to:"r_fallback_334"}
+      ]
+    },
+    n_cfm_check_fx: {
+      q: "¿Se han verificado y cumplido los requisitos de inmunización durante, al menos, los DOS últimos trimestres consecutivos?",
+      options: [
+        {k:"Sí, cumplidos 2 trimestres", to:"r_332_fx"},
+        {k:"No, incumplimiento ≥2 trimestres", to:"r_fallback_334"}
+      ]
+    },
+    n_pb_check_eur: {
+      q: "¿La póliza tiene participación en beneficios (PB), o su provisión se determinó según art. 33.2.b?",
+      help: "Art. 33.3: en estos casos, la provisión no podrá calcularse a un tipo superior al utilizado para el cálculo de la PRIMA (tope adicional).",
+      options: [
+        {k:"Sí, aplica tope art. 33.3", to:"r_332_eur_pb"},
+        {k:"No, sin tope adicional", to:"r_332_eur_nopb"}
+      ]
+    },
+    n_semimatch_eur: {
+      q: "Dentro del régimen general art. 33.1.a, ¿qué opción quiere evaluar?",
+      options: [
+        {k:"a.1º Tipo DGS (60% deuda pública + ajuste)", to:"r_33_1_a1"},
+        {k:"a.2º Semi-matching (comparación duraciones cobro vs pago)", to:"r_33_1_a2"}
+      ]
+    },
+    r_33_1_b1: {
+      terminal:true, calc:"A",
+      title:"Art. 33.1.b.1º — Tipo DGS (moneda distinta al euro)",
+      badge:"vig",
+      text:"Régimen espejo del 33.1.a.1º pero referido a la deuda pública del Estado emisor de la divisa correspondiente y a la curva swap de esa divisa. Use la Calculadora A adaptando los inputs a la divisa."
+    },
+    r_332_fx: {
+      terminal:true, calc:"D",
+      title:"Art. 33.2 — Inmunización (moneda distinta al euro)",
+      badge:"vig",
+      text:"Tipo = TIR de las inversiones asignadas, sujeto a los mismos controles trimestrales y de fallback del 33.4. Use la Calculadora D."
+    },
+    r_pre1999: {
+      terminal:true, calc:null,
+      title:"Disposición Transitoria 2ª ROSSP — Cartera anterior a 1999",
+      badge:"trans",
+      text:"Se continúa usando el tipo técnico que sirvió de base para el cálculo de la PRIMA. Si ese tipo supera los límites del art. 33.1, la entidad debe asignar inversiones específicas a estos contratos (mantenimiento del criterio de asignación salvo autorización expresa). Aplica también la cláusula de Rentabilidad Real (RRAC) del último párrafo del art. 33.1 → revisar con Calculadora C."
+    },
+    r_da5: {
+      terminal:true, calc:"G",
+      title:"DA 5ª RD 1060/2015 — Adaptación a ETRLR para cartera 1999-2015",
+      badge:"vig",
+      text:"Solo disponible para pólizas que empleaban el Tipo DGS (33.1.a.1º/b.1º). Migración irreversible a la estructura temporal de tipos sin riesgo (art. 54 RD 1060/2015), con VA opcional (art. 57), dotando la diferencia linealmente en máximo 10 años desde 31-12-2015. Use la Calculadora G para el seguimiento de la dotación lineal."
+    },
+    r_post2016_va: {
+      terminal:true, calc:"E",
+      title:"Guía Técnica 2/2016 — Nueva producción con Ajuste por Volatilidad",
+      badge:"vig",
+      text:"Tipo = mín( ETRLR + VA en el punto de duración relevante ; tipo de interés garantizado del compromiso ). Use la Calculadora E."
+    },
+    r_post2016_sinva: {
+      terminal:true, calc:"E",
+      title:"Guía Técnica 2/2016 — Nueva producción sin Ajuste por Volatilidad",
+      badge:"vig",
+      text:"Tipo = mín( ETRLR sin VA ; tipo de interés garantizado del compromiso ). Use la Calculadora E con VA desactivado."
+    },
+    r_33_1_c: {
+      terminal:true, calc:null,
+      title:"Art. 33.1.c) — Tipo garantizado fijado ≤ 1 año (precomunicado)",
+      badge:"vig",
+      text:"El límite es, simplemente, el tipo de interés garantizado en cada periodo (no superior al año). Riesgo principal: si el mínimo garantizado contractual (suelo) supera el Tipo DGS vigente, en la práctica no podrá recalificarse como 33.1.c y deberá tratarse como 33.1.a."
+    },
+    r_33_1_a1: {
+      terminal:true, calc:"A",
+      title:"Art. 33.1.a.1º — Tipo DGS (régimen general, euros)",
+      badge:"vig",
+      text:"Tipo = mín( 60%·i_DP_general + 50%·(i_DGS(t-1) − r_euroswap11a) ; 60%·i_DP_20a+ ). Publicado anualmente por la DGSFP. Use la Calculadora A."
+    },
+    r_33_1_a2: {
+      terminal:true, calc:"B",
+      title:"Art. 33.1.a.2º — Semi-matching (comparación de duraciones)",
+      badge:"vig",
+      text:"Si Duración financiera de cobros ≥ Duración de pagos → se aplica el Tipo DGS del año de origen de la póliza a todo el horizonte. Si es inferior → descuento en DOS tramos (tipo DGS origen hasta el punto de corte; tipo DGS vigente después). Use la Calculadora B."
+    },
+    r_332_eur_pb: {
+      terminal:true, calc:"D",
+      title:"Art. 33.2 + Tope art. 33.3 — Inmunización con Participación en Beneficios",
+      badge:"vig",
+      text:"Tipo = mín( TIR de inversiones asignadas ; tipo de interés usado para calcular la PRIMA ). Use la Calculadora D con el tope activado."
+    },
+    r_332_eur_nopb: {
+      terminal:true, calc:"D",
+      title:"Art. 33.2 — Inmunización sin Participación en Beneficios",
+      badge:"vig",
+      text:"Tipo = TIR de las inversiones específicamente asignadas y adecuadas, sin tope adicional del 33.3. Use la Calculadora D."
+    },
+    r_fallback_334: {
+      terminal:true, calc:"D",
+      title:"Art. 33.4 — Fallback obligatorio al régimen general art. 33.1",
+      badge:"vig",
+      text:"Al incumplirse los requisitos de adecuación de inversiones durante 2 trimestres consecutivos, el interés técnico pasa a ser, de forma inmediata, el del art. 33.1 (Tipo DGS / semi-matching / 33.1.c según corresponda). Impacto contable potencialmente muy significativo (dotación adicional inmediata). Use la Calculadora D para simular el salto de tipo."
+    }
+  }
+};
+
+let arbolPath = [];
+let arbolCurrent = ARBOL.start;
+
+function arbolRender(){
+  const node = ARBOL.nodes[arbolCurrent];
+  const panel = document.getElementById('arbolPanel');
+  const bc = document.getElementById('arbolBread');
+  let breadHtml = '<div class="card"><h3>Ruta seguida</h3>';
+  if(arbolPath.length===0){
+    breadHtml += '<p class="cite">Aún no hay decisiones registradas. Responda a la primera pregunta.</p>';
+  } else {
+    arbolPath.forEach(step=>{
+      breadHtml += `<div class="breadcrumb-step"><span class="q">${step.q}</span><span class="a">→ ${step.a}</span></div>`;
+    });
+  }
+  breadHtml += '</div>';
+  bc.innerHTML = breadHtml;
+
+  let html = '<div class="card">';
+  html += `<div class="node-progress">Paso ${arbolPath.length+1}${node.terminal?' · RESULTADO':''}</div>`;
+
+  if(node.terminal){
+    html += `<div class="result-final">
+      <h4>${node.title} <span class="badge ${node.badge}">${node.badge==='vig'?'Vigente':(node.badge==='trans'?'Transitorio':node.badge)}</span></h4>
+      <p>${node.text}</p>`;
+    if(node.calc){
+      html += `<button class="btn primary" onclick="goToCalc('${node.calc}')">Abrir Calculadora ${node.calc} →</button>`;
+    }
+    html += `</div>`;
+  } else {
+    html += `<div class="tree-question">${node.q}</div>`;
+    if(node.help) html += `<div class="tree-help">${node.help}</div>`;
+    html += '<div class="tree-options">';
+    node.options.forEach(opt=>{
+      html += `<button onclick="arbolChoose('${opt.k.replace(/'/g,"\\'")}','${opt.to}')"><span class="k">Opción</span>${opt.k}</button>`;
+    });
+    html += '</div>';
+  }
+  html += `<div style="margin-top:1rem;display:flex;gap:.5rem;">
+      <button class="btn" onclick="arbolBack()" ${arbolPath.length===0?'disabled':''}>← Volver</button>
+      <button class="btn" onclick="arbolReset()">Reiniciar árbol</button>
+    </div>`;
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function arbolChoose(answerLabel, toNode){
+  const node = ARBOL.nodes[arbolCurrent];
+  arbolPath.push({q:node.q, a:answerLabel, from:arbolCurrent});
+  arbolCurrent = toNode;
+  arbolRender();
+}
+function arbolBack(){
+  if(arbolPath.length===0) return;
+  const prev = arbolPath.pop();
+  arbolCurrent = prev.from;
+  arbolRender();
+}
+function arbolReset(){
+  arbolPath = [];
+  arbolCurrent = ARBOL.start;
+  arbolRender();
+}
+function goToCalc(letter){
+  const el = document.getElementById('calc'+letter);
+  if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.classList.add('searchhit');
+    setTimeout(()=>el.classList.remove('searchhit'), 2400); }
+}
+document.addEventListener('DOMContentLoaded', arbolRender);
+</script>
+<script>
+/* ===================== CALCULADORAS A-G — ART. 33 ROSSP ===================== */
+
+function fmtPct(x, dec=4){ return (x*100).toFixed(dec)+'%'; }
+function fmtNum(x, dec=2){ return x.toLocaleString('es-ES',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
+function getVal(id){ return parseFloat(document.getElementById(id).value); }
+
+/* --- Utilidad export CSV genérica --- */
+function exportCSV(filename, rows){
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+/* ============ CALCULADORA A: Tipo DGS (art. 33.1.a.1º / b.1º) ============ */
+function calcA(){
+  const rGen = getVal('A_rgen')/100;
+  const iDgsPrev = getVal('A_idgsprev')/100;
+  const rSwap11 = getVal('A_rswap11')/100;
+  const r20 = getVal('A_r20')/100;
+
+  const base = 0.6*rGen + 0.5*(iDgsPrev - rSwap11);
+  const cap  = 0.6*r20;
+  const tipo = Math.min(base, cap);
+  const limitante = (base<=cap) ? "Fórmula base (no cap 20a+)" : "Tope 20 años o más (cap)";
+
+  document.getElementById('A_out').innerHTML = `
+    <div class="result-box">
+      <div>Componente base = 0,60×${fmtPct(rGen)} + 0,50×(${fmtPct(iDgsPrev)} − ${fmtPct(rSwap11)}) = <b>${fmtPct(base)}</b></div>
+      <div>Tope (cap) = 0,60×${fmtPct(r20)} = <b>${fmtPct(cap)}</b></div>
+      <div style="margin-top:.4rem;">Tipo DGS aplicable = mín(base, cap) → <span class="big">${fmtPct(tipo)}</span></div>
+      <div class="cite">Elemento limitante: ${limitante}. [RD 2486/1998, art. 33.1.a.1º]</div>
+    </div>`;
+  window._lastA = {rGen,iDgsPrev,rSwap11,r20,base,cap,tipo};
+}
+function exportA(){
+  const d = window._lastA; if(!d) return calcA();
+  exportCSV('calculadoraA_tipoDGS.csv',[
+    ['Calculadora A - Tipo DGS art.33.1.a.1'],
+    ['Input','Valor'],
+    ['i medio deuda pública general (últ. trim.)', fmtPct(d.rGen)],
+    ['Tipo DGS ejercicio anterior', fmtPct(d.iDgsPrev)],
+    ['Euroswap 11 años (31-dic ejercicio anterior)', fmtPct(d.rSwap11)],
+    ['i medio deuda pública 20+ años', fmtPct(d.r20)],
+    ['Componente base', fmtPct(d.base)],
+    ['Tope (cap 60% deuda 20a+)', fmtPct(d.cap)],
+    ['TIPO DGS APLICABLE', fmtPct(d.tipo)]
+  ]);
+}
+
+/* ============ CALCULADORA B: Semi-matching (art. 33.1.a.2º) ============ */
+function calcB(){
+  const Dc = getVal('B_dc'), Dp = getVal('B_dp');
+  const i0 = getVal('B_i0')/100, i1 = getVal('B_i1')/100;
+  const C = getVal('B_cap');
+  let VA, detalle, cumpleCond;
+  cumpleCond = Dc >= Dp;
+  if(cumpleCond){
+    VA = C/Math.pow(1+i0, Dp);
+    detalle = `Duración cobros (${Dc}a) ≥ Duración pagos (${Dp}a) → se aplica <b>i0=${fmtPct(i0)}</b> a todo el horizonte.<br>
+      VA = ${fmtNum(C)} / (1+${fmtPct(i0)})^${Dp} = <b>${fmtNum(VA)}</b>`;
+  } else {
+    VA = C/(Math.pow(1+i0,Dc)*Math.pow(1+i1,Dp-Dc));
+    detalle = `Duración cobros (${Dc}a) &lt; Duración pagos (${Dp}a) → descuento en 2 tramos:<br>
+      Tramo 1 [0–${Dc}a] a i0=${fmtPct(i0)}; Tramo 2 [${Dc}–${Dp}a] a i1=${fmtPct(i1)} (tipo DGS vigente).<br>
+      VA = ${fmtNum(C)} / [(1+${fmtPct(i0)})^${Dc} × (1+${fmtPct(i1)})^${Dp-Dc}] = <b>${fmtNum(VA)}</b>`;
+  }
+  // Comparación de referencia: VA si NO existiera gap (todo a i0) para medir impacto del gap
+  const VA_sin_gap = C/Math.pow(1+i0, Dp);
+  const impacto = VA - VA_sin_gap;
+
+  document.getElementById('B_out').innerHTML = `
+    <div class="result-box">
+      <div>${detalle}</div>
+      <div style="margin-top:.5rem;">Valor Actual (Provisión) = <span class="big">${fmtNum(VA)}</span></div>
+      <div class="cite">Si no existiera gap de duraciones (referencia), VA sería ${fmtNum(VA_sin_gap)}. Impacto del gap sobre la PM: ${fmtNum(impacto)} (${impacto>=0?'incremento':'reducción'} de provisión).</div>
+      <div class="cite">[RD 2486/1998, art. 33.1.a.2º]. Punto de corte = duración financiera de los cobros (Dc).</div>
+    </div>`;
+  window._lastB = {Dc,Dp,i0,i1,C,VA,cumpleCond,VA_sin_gap,impacto};
+}
+function exportB(){
+  const d = window._lastB; if(!d) return calcB();
+  exportCSV('calculadoraB_semimatching.csv',[
+    ['Calculadora B - Semi-matching art.33.1.a.2'],
+    ['Input','Valor'],
+    ['Duración financiera cobros (Dc, años)', d.Dc],
+    ['Duración financiera pagos (Dp, años)', d.Dp],
+    ['Tipo DGS año origen (i0)', fmtPct(d.i0)],
+    ['Tipo DGS vigente (i1, 2º tramo)', fmtPct(d.i1)],
+    ['Capital/flujo (C)', d.C],
+    ['¿Cumple Dc>=Dp?', d.cumpleCond?'SI (tramo único)':'NO (dos tramos)'],
+    ['VA / Provisión resultante', fmtNum(d.VA)],
+    ['VA referencia sin gap (todo a i0)', fmtNum(d.VA_sin_gap)],
+    ['Impacto del gap sobre PM', fmtNum(d.impacto)]
+  ]);
+}
+
+/* ============ CALCULADORA C: Rentabilidad Real (RRAC) ============ */
+function calcC(){
+  const Rreal = getVal('C_rreal')/100;
+  const iMedio = getVal('C_imedio')/100;
+  const acreditado = document.getElementById('C_acred').value === 'si';
+
+  const aplicaRRAC = (Rreal < iMedio) && !acreditado;
+  const tipoFinal = aplicaRRAC ? Rreal : iMedio;
+
+  let motivo;
+  if(!aplicaRRAC && acreditado){
+    motivo = "No aplica la cláusula de RRAC: la entidad acreditó ante la DGSFP que el rendimiento del ejercicio en curso y sucesivos será suficiente.";
+  } else if(!aplicaRRAC && Rreal>=iMedio){
+    motivo = "No aplica: la rentabilidad real obtenida NO es inferior al tipo técnico medio de operaciones sin asignación específica.";
+  } else {
+    motivo = "Aplica la cláusula de Rentabilidad Real: se sustituye el tipo por la rentabilidad realmente obtenida (más conservador).";
+  }
+
+  document.getElementById('C_out').innerHTML = `
+    <div class="result-box">
+      <div>Rentabilidad real obtenida = ${fmtPct(Rreal)} &nbsp;|&nbsp; Tipo técnico medio (sin asignación) = ${fmtPct(iMedio)}</div>
+      <div style="margin-top:.4rem;">${motivo}</div>
+      <div style="margin-top:.4rem;">Tipo técnico final a aplicar = <span class="big">${fmtPct(tipoFinal)}</span></div>
+      <div class="cite">[RD 2486/1998, art. 33.1, último párrafo — cláusula de Rentabilidad Real]</div>
+    </div>`;
+  window._lastC = {Rreal,iMedio,acreditado,aplicaRRAC,tipoFinal};
+}
+function exportC(){
+  const d = window._lastC; if(!d) return calcC();
+  exportCSV('calculadoraC_rentabilidadreal.csv',[
+    ['Calculadora C - Rentabilidad Real (RRAC) art.33.1 ult. parrafo'],
+    ['Input','Valor'],
+    ['Rentabilidad real obtenida', fmtPct(d.Rreal)],
+    ['Tipo técnico medio (sin asignación)', fmtPct(d.iMedio)],
+    ['¿Acreditado suficiencia ante DGSFP?', d.acreditado?'SI':'NO'],
+    ['¿Aplica cláusula RRAC?', d.aplicaRRAC?'SI':'NO'],
+    ['TIPO TECNICO FINAL', fmtPct(d.tipoFinal)]
+  ]);
+}
+
+/* ============ CALCULADORA D: CFM/Duration Matching + tope 33.3 + fallback 33.4 ============ */
+function calcD(){
+  const TIR = getVal('D_tir')/100;
+  const iPrima = getVal('D_iprima')/100;
+  const topePB = document.getElementById('D_pb').value === 'si';
+  const incumple2T = document.getElementById('D_incumple').value === 'si';
+  const tipo331 = getVal('D_tipo331')/100;
+
+  let tipo, nota;
+  if(incumple2T){
+    tipo = tipo331;
+    nota = `<b>Fallback art. 33.4 activado</b>: incumplimiento de requisitos de inmunización durante ≥2 trimestres consecutivos. El tipo técnico pasa a ser el del régimen general art. 33.1 = ${fmtPct(tipo331)}.`;
+  } else if(topePB){
+    tipo = Math.min(TIR, iPrima);
+    nota = `Tope art. 33.3 (PB / 33.2.b) aplicado: tipo = mín(TIR=${fmtPct(TIR)} , i_prima=${fmtPct(iPrima)}) = ${fmtPct(tipo)}.`;
+  } else {
+    tipo = TIR;
+    nota = `Sin tope adicional (no hay PB): tipo = TIR de inversiones asignadas = ${fmtPct(tipo)}.`;
+  }
+  const saltoTipo = incumple2T ? (TIR - tipo331) : 0;
+
+  document.getElementById('D_out').innerHTML = `
+    <div class="result-box">
+      <div>${nota}</div>
+      <div style="margin-top:.4rem;">Tipo técnico aplicable = <span class="big">${fmtPct(tipo)}</span></div>
+      ${incumple2T? `<div class="cite">Salto de tipo respecto a la TIR de inmunización: ${fmtPct(saltoTipo)} (impacto potencial de dotación adicional inmediata).</div>`:''}
+      <div class="cite">[RD 2486/1998, art. 33.2 / 33.3 / 33.4]</div>
+    </div>`;
+  window._lastD = {TIR,iPrima,topePB,incumple2T,tipo331,tipo,saltoTipo};
+}
+function exportD(){
+  const d = window._lastD; if(!d) return calcD();
+  exportCSV('calculadoraD_inmunizacion.csv',[
+    ['Calculadora D - Inmunizacion (CFM/Duration) art.33.2-33.4'],
+    ['Input','Valor'],
+    ['TIR inversiones asignadas', fmtPct(d.TIR)],
+    ['Tipo usado en el cálculo de la prima', fmtPct(d.iPrima)],
+    ['¿Tope 33.3 (PB / 33.2.b)?', d.topePB?'SI':'NO'],
+    ['¿Incumple 2 trimestres (fallback 33.4)?', d.incumple2T?'SI':'NO'],
+    ['Tipo fallback art.33.1', fmtPct(d.tipo331)],
+    ['TIPO APLICABLE', fmtPct(d.tipo)],
+    ['Salto de tipo si fallback', fmtPct(d.saltoTipo)]
+  ]);
+}
+
+/* ============ CALCULADORA E: ETRLR + VA + mín(garantizado) — Guía 2/2016 ============ */
+function calcE(){
+  const rCurva = getVal('E_rcurva')/100;
+  const vaBps = getVal('E_va');
+  const usaVA = document.getElementById('E_usava').value === 'si';
+  const iGar = getVal('E_igar')/100;
+
+  const rEff = rCurva + (usaVA ? vaBps/10000 : 0);
+  const tipoMax = Math.min(rEff, iGar);
+  const limitante = (rEff <= iGar) ? "ETRLR(+VA)" : "Tipo garantizado del compromiso";
+
+  document.getElementById('E_out').innerHTML = `
+    <div class="result-box">
+      <div>ETRLR en el punto de duración relevante = ${fmtPct(rCurva)}</div>
+      <div>Ajuste por Volatilidad (VA) ${usaVA?'aplicado':'NO aplicado'} = ${usaVA? (vaBps+' pb = '+fmtPct(vaBps/10000)) : '0%'}</div>
+      <div>ETRLR efectivo = ${fmtPct(rEff)}</div>
+      <div style="margin-top:.4rem;">Tipo técnico máximo = mín(ETRLR efectivo, tipo garantizado=${fmtPct(iGar)}) → <span class="big">${fmtPct(tipoMax)}</span></div>
+      <div class="cite">Elemento limitante: ${limitante}. El VA solo es aplicable si la entidad también lo usa a efectos de Solvencia II. [Guía Técnica 2/2016 DGSFP; RD 1060/2015 arts. 54 y 57]</div>
+    </div>`;
+  window._lastE = {rCurva,vaBps,usaVA,iGar,rEff,tipoMax};
+}
+function exportE(){
+  const d = window._lastE; if(!d) return calcE();
+  exportCSV('calculadoraE_etrlr.csv',[
+    ['Calculadora E - ETRLR + VA + Guia 2/2016'],
+    ['Input','Valor'],
+    ['ETRLR (curva libre de riesgo) en punto relevante', fmtPct(d.rCurva)],
+    ['Ajuste por Volatilidad (pb)', d.vaBps],
+    ['¿Aplica VA?', d.usaVA?'SI':'NO'],
+    ['Tipo interés garantizado del compromiso', fmtPct(d.iGar)],
+    ['ETRLR efectivo (curva + VA si aplica)', fmtPct(d.rEff)],
+    ['TIPO TECNICO MAXIMO', fmtPct(d.tipoMax)]
+  ]);
+}
+
+/* ============ CALCULADORA F: Nominal -> Efectiva (convención de tipo) ============ */
+function calcF(){
+  const j = getVal('F_j')/100;
+  const m = parseInt(document.getElementById('F_m').value);
+  const conv = document.getElementById('F_conv').value;
+
+  let iEff;
+  if(conv === 'efectiva'){
+    iEff = j; // ya es efectiva anual
+  } else {
+    iEff = Math.pow(1+j/m, m) - 1;
+  }
+  document.getElementById('F_out').innerHTML = `
+    <div class="result-box">
+      ${conv==='efectiva' ?
+        `<div>Convención: Efectiva anual (default). i_efectiva = ${fmtPct(j)} (no requiere transformación).</div>`
+        :
+        `<div>Convención: Nominal anual con m=${m} capitalizaciones/año.</div>
+         <div>i_eff = (1 + j/m)^m − 1 = (1 + ${fmtPct(j)}/${m})^${m} − 1</div>`
+      }
+      <div style="margin-top:.4rem;">i_efectiva_equivalente = <span class="big">${fmtPct(iEff,5)}</span></div>
+      <div class="hipotesis-box">⚠️ Error frecuente: confundir tipo nominal con efectivo. Ej.: j=3,00% nominal mensual (m=12) equivale a i_efectiva=${fmtPct(Math.pow(1+0.03/12,12)-1,5)}, NO a 3,00%. La diferencia crece con m y con el nivel de j.</div>
+    </div>`;
+  window._lastF = {j,m,conv,iEff};
+}
+function exportF(){
+  const d = window._lastF; if(!d) return calcF();
+  exportCSV('calculadoraF_nominal_efectiva.csv',[
+    ['Calculadora F - Conversion Nominal a Efectiva'],
+    ['Input','Valor'],
+    ['Convención', d.conv],
+    ['Tipo input (j)', fmtPct(d.j)],
+    ['m capitalizaciones/año', d.m],
+    ['i_efectiva_equivalente', fmtPct(d.iEff,5)]
+  ]);
+}
+
+/* ============ CALCULADORA G: Dotación lineal DA 5ª RD 1060/2015 (10 años) ============ */
+function calcG(){
+  const PM33 = getVal('G_pm33');
+  const PMetrlr = getVal('G_pmetrlr');
+  const anios = getVal('G_anios');
+  const total = getVal('G_total');
+
+  const gap = PMetrlr - PM33;
+  const dotAnual = gap/total;
+  const aniosEfectivos = Math.min(anios, total);
+  const dotAcum = dotAnual*aniosEfectivos;
+  const PMactual = PM33 + dotAcum;
+  const pct = (aniosEfectivos/total)*100;
+  const agotado = anios >= total;
+
+  document.getElementById('G_out').innerHTML = `
+    <div class="result-box">
+      <div>Gap inicial (PM_ETRLR − PM_art.33) = ${fmtNum(PMetrlr)} − ${fmtNum(PM33)} = <b>${fmtNum(gap)}</b></div>
+      <div>Dotación adicional lineal anual = Gap / ${total} años = <b>${fmtNum(dotAnual)}</b>/año</div>
+      <div>Dotación acumulada a los ${aniosEfectivos} años = ${fmtNum(dotAcum)}</div>
+      <div style="margin-top:.4rem;">Provisión matemática actual (con dotación acumulada) = <span class="big">${fmtNum(PMactual)}</span></div>
+      <div class="cite">Progreso de adaptación: ${pct.toFixed(1)}% ${agotado?'— PLAZO AGOTADO (10 años desde 31-12-2015): PM_actual = PM_ETRLR.':''}</div>
+      <div class="cite">[RD 1060/2015, Disposición Adicional 5ª]</div>
+    </div>`;
+  window._lastG = {PM33,PMetrlr,anios,total,gap,dotAnual,dotAcum,PMactual,pct,agotado};
+}
+function exportG(){
+  const d = window._lastG; if(!d) return calcG();
+  exportCSV('calculadoraG_da5_dotacion.csv',[
+    ['Calculadora G - Dotacion lineal DA5 RD1060/2015'],
+    ['Input','Valor'],
+    ['PM bajo art.33 (tipo DGS)', fmtNum(d.PM33)],
+    ['PM bajo ETRLR (objetivo)', fmtNum(d.PMetrlr)],
+    ['Años transcurridos desde 31-12-2015', d.anios],
+    ['Plazo máximo (años)', d.total],
+    ['Gap inicial', fmtNum(d.gap)],
+    ['Dotación lineal anual', fmtNum(d.dotAnual)],
+    ['Dotación acumulada', fmtNum(d.dotAcum)],
+    ['PM actual', fmtNum(d.PMactual)],
+    ['% completado', d.pct.toFixed(1)+'%'],
+    ['¿Plazo agotado?', d.agotado?'SI':'NO']
+  ]);
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  calcA(); calcB(); calcC(); calcD(); calcE(); calcF(); calcG();
+});
+</script>
+<script>
+/* ===================== UTILIDADES GLOBALES ===================== */
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next==='dark'?'dark':'');
+  localStorage.setItem('a33_theme', next);
+}
+(function initTheme(){
+  const saved = localStorage.getItem('a33_theme');
+  if(saved==='dark') document.documentElement.setAttribute('data-theme','dark');
+})();
+
+function doSearch(){
+  const term = document.getElementById('searchBox').value.trim().toLowerCase();
+  document.querySelectorAll('mark.hl').forEach(m=>{
+    m.outerHTML = m.innerHTML;
+  });
+  if(!term) return;
+  const walker = document.createTreeWalker(document.getElementById('mainContent'), NodeFilter.SHOW_TEXT);
+  let node, firstHit=null;
+  const toWrap = [];
+  while(node = walker.nextNode()){
+    if(node.parentElement.closest('script,style')) continue;
+    const idx = node.nodeValue.toLowerCase().indexOf(term);
+    if(idx>=0) toWrap.push(node);
+  }
+  toWrap.forEach(n=>{
+    const txt = n.nodeValue;
+    const idx = txt.toLowerCase().indexOf(term);
+    const span = document.createElement('span');
+    span.innerHTML = txt.substring(0,idx)+'<mark class="hl">'+txt.substring(idx,idx+term.length)+'</mark>'+txt.substring(idx+term.length);
+    n.parentNode.replaceChild(span, n);
+    if(!firstHit) firstHit = span;
+  });
+  if(firstHit) firstHit.scrollIntoView({behavior:'smooth', block:'center'});
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Enter' && document.activeElement.id==='searchBox') doSearch(); });
+
+function applyLevelFilters(){
+  const showB = document.getElementById('lvlBasico').checked;
+  const showI = document.getElementById('lvlIntermedio').checked;
+  const showA = document.getElementById('lvlActuarial').checked;
+  document.body.classList.toggle('hide-basico', !showB);
+  document.body.classList.toggle('hide-intermedio', !showI);
+  document.body.classList.toggle('hide-actuarial', !showA);
+}
+
+function updateProgress(){
+  const sections = document.querySelectorAll('main section');
+  const scrollPos = window.scrollY + window.innerHeight*0.3;
+  let idx=0, total=sections.length;
+  sections.forEach((s,i)=>{ if(s.offsetTop <= scrollPos) idx=i+1; });
+  const pct = total? Math.min(100, Math.round((idx/total)*100)) : 0;
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.querySelectorAll('nav.sidebar a').forEach(a=>a.classList.remove('active'));
+  if(sections[idx-1]){
+    const id = sections[idx-1].id;
+    const link = document.querySelector(`nav.sidebar a[href="#${id}"]`);
+    if(link) link.classList.add('active');
+  }
+}
+window.addEventListener('scroll', updateProgress);
+window.addEventListener('load', updateProgress);
+
+function resetDashboard(){
+  if(!confirm('¿Reiniciar el dashboard? Se restablecerán filtros, tema, árbol de decisión y calculadoras a sus valores por defecto.')) return;
+  localStorage.removeItem('a33_theme');
+  document.documentElement.removeAttribute('data-theme');
+  document.getElementById('searchBox').value='';
+  ['lvlBasico','lvlIntermedio','lvlActuarial'].forEach(id=>document.getElementById(id).checked=true);
+  applyLevelFilters();
+  arbolReset();
+  calcA(); calcB(); calcC(); calcD(); calcE(); calcF(); calcG();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function printDashboard(){ window.print(); }
+
+/* Autoevaluación */
+const QUIZ = [
+  {q:"¿Qué artículo del ROSSP regula el tipo de interés aplicable a la provisión de seguros de vida?",
+   opts:["Art. 29","Art. 33","Art. 46","Art. 77"], correct:1},
+  {q:"¿Desde qué fecha se aplica el nuevo régimen basado en la ETRLR (Guía Técnica 2/2016) a la nueva producción?",
+   opts:["1 de enero de 1999","1 de enero de 2016","31 de diciembre de 2015","20 de noviembre de 2015"], correct:1},
+  {q:"En el semi-matching (art. 33.1.a.2º), si la duración de los cobros es MENOR que la de los pagos, ¿qué ocurre?",
+   opts:["Se aplica el tipo DGS del año de origen a todo el horizonte",
+         "Se descuenta en dos tramos: tipo DGS origen hasta el punto de corte y tipo DGS vigente después",
+         "Se aplica directamente la TIR de la cartera",
+         "La póliza queda excluida del art. 33"], correct:1},
+  {q:"¿Qué ocurre si una entidad incumple los requisitos de inmunización del art. 33.2 durante 2 trimestres consecutivos?",
+   opts:["No pasa nada, se corrige el trimestre siguiente",
+         "Debe recalcular la provisión con el régimen general del art. 33.1 (fallback art. 33.4)",
+         "Se aplica automáticamente el tipo garantizado",
+         "Se congela el tipo del trimestre anterior"], correct:1},
+  {q:"El Ajuste por Volatilidad (VA) en el tipo técnico contable según la Guía 2/2016...",
+   opts:["Se puede aplicar siempre, sin condiciones",
+         "Solo si la entidad también lo aplica en la valoración de provisiones técnicas de Solvencia II",
+         "Solo aplica a pólizas anteriores a 1999",
+         "Está prohibido en cualquier caso"], correct:1},
+  {q:"La cláusula de Rentabilidad Real (RRAC) del art. 33.1 último párrafo se activa cuando...",
+   opts:["La rentabilidad real es siempre igual al tipo medio",
+         "La rentabilidad real obtenida es inferior al tipo técnico medio sin asignación específica y no se ha acreditado suficiencia futura ante la DGSFP",
+         "Solo si la entidad lo solicita expresamente cada año",
+         "Nunca se activa en la práctica"], correct:1}
+];
+function renderQuiz(){
+  let html='';
+  QUIZ.forEach((item,i)=>{
+    html+=`<div class="card" data-nivel="intermedio">
+      <b>${i+1}. ${item.q}</b>
+      <div style="margin-top:.5rem;">`;
+    item.opts.forEach((o,j)=>{
+      html+=`<div><label style="display:flex;gap:.5rem;align-items:center;font-size:.85rem;padding:.2rem 0;">
+        <input type="radio" name="quiz${i}" value="${j}"> ${o}</label></div>`;
+    });
+    html+=`</div><div id="quizFeedback${i}" class="cite" style="margin-top:.3rem;"></div></div>`;
+  });
+  document.getElementById('quizContainer').innerHTML = html;
+  QUIZ.forEach((item,i)=>{
+    document.querySelectorAll(`input[name="quiz${i}"]`).forEach(inp=>{
+      inp.addEventListener('change', ()=>{
+        const val = parseInt(document.querySelector(`input[name="quiz${i}"]:checked`).value);
+        const fb = document.getElementById('quizFeedback'+i);
+        fb.innerHTML = (val===item.correct)
+          ? '<span style="color:var(--ok);font-weight:600;">✔ Correcto.</span>'
+          : '<span style="color:var(--danger);font-weight:600;">✘ Incorrecto. Revise el bloque correspondiente del dashboard.</span>';
+      });
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', renderQuiz);
+</script>
+</body>
+</html>
