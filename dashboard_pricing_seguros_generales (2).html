@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Pricing en Seguros Generales — Pietro Parodi</title>
+<style>
+
+:root{
+  --bg:#0b1420; --bg2:#101d2e; --panel:#132235; --panel2:#162a40;
+  --border:#223349; --text:#eaf2fb; --muted:#9fb3c8; --accent:#2dd4bf;
+  --accent2:#60a5fa; --warn:#f59e0b; --danger:#ef4444; --ok:#22c55e;
+  --purple:#a78bfa; --radius:14px; --shadow:0 4px 18px rgba(0,0,0,.35);
+  --font:'Segoe UI',system-ui,Arial,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f4f7fb; --bg2:#ffffff; --panel:#ffffff; --panel2:#eef3f9;
+  --border:#d7e1ec; --text:#16222f; --muted:#55697d; --accent:#0d9488;
+  --accent2:#2563eb; --shadow:0 4px 14px rgba(20,40,70,.08);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--font);
+  font-size:15px; line-height:1.5; transition:background .3s,color .3s;
+}
+a{color:var(--accent2);}
+h1,h2,h3,h4{font-weight:700; margin:.2em 0 .5em;}
+h1{font-size:1.5rem;} h2{font-size:1.25rem;} h3{font-size:1.05rem;} h4{font-size:.95rem;}
+code{background:var(--panel2); padding:1px 6px; border-radius:6px; font-size:.85em;}
+.small{font-size:.82em; color:var(--muted);}
+.badge{
+  display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem;
+  font-weight:700; letter-spacing:.3px; text-transform:uppercase;
+}
+.badge.dato{background:#1d4ed822; color:#60a5fa; border:1px solid #60a5fa55;}
+.badge.supuesto{background:#f59e0b22; color:#f59e0b; border:1px solid #f59e0b55;}
+.badge.resultado{background:#22c55e22; color:#22c55e; border:1px solid #22c55e55;}
+.badge.libro{background:#a78bfa22; color:#a78bfa; border:1px solid #a78bfa55;}
+.badge.amp{background:#ef444422; color:#f87171; border:1px solid #f8717155;}
+
+/* LAYOUT */
+#app{display:flex; flex-direction:column; min-height:100vh;}
+header#topbar{
+  position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:14px;
+  padding:10px 18px; background:linear-gradient(90deg,var(--bg2),var(--panel));
+  border-bottom:1px solid var(--border); flex-wrap:wrap; box-shadow:var(--shadow);
+}
+header#topbar .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem;}
+header#topbar .logo span.sub{font-size:.72rem; color:var(--muted); font-weight:400; display:block;}
+.selector-group{display:flex; align-items:center; gap:6px; font-size:.8rem; color:var(--muted);}
+select, input[type=range], input[type=number], button{
+  background:var(--panel2); color:var(--text); border:1px solid var(--border);
+  border-radius:8px; padding:6px 9px; font-family:var(--font); font-size:.85rem;
+}
+button{cursor:pointer; transition:.15s; font-weight:600;}
+button:hover{filter:brightness(1.15); transform:translateY(-1px);}
+button.primary{background:var(--accent); color:#06251f; border:none;}
+button.ghost{background:transparent; border:1px solid var(--border);}
+.spacer{flex:1;}
+#main-wrap{display:flex; flex:1; min-height:0;}
+nav#sidebar{
+  width:270px; flex-shrink:0; background:var(--bg2); border-right:1px solid var(--border);
+  padding:14px 10px; overflow-y:auto; max-height:calc(100vh - 58px); position:sticky; top:58px;
+}
+nav#sidebar .grp-title{
+  font-size:.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--muted);
+  margin:16px 8px 6px; font-weight:700;
+}
+nav#sidebar a.nav-item{
+  display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:9px;
+  color:var(--text); text-decoration:none; font-size:.85rem; margin-bottom:2px; cursor:pointer;
+}
+nav#sidebar a.nav-item:hover{background:var(--panel2);}
+nav#sidebar a.nav-item.active{background:var(--accent); color:#062; font-weight:700;}
+nav#sidebar a.nav-item .num{
+  width:22px; height:22px; border-radius:50%; background:var(--panel2); display:flex;
+  align-items:center; justify-content:center; font-size:.7rem; flex-shrink:0; border:1px solid var(--border);
+}
+main#content{flex:1; padding:22px 28px 70px; overflow-y:auto; max-height:calc(100vh - 58px);}
+section.module{display:none; animation:fadein .25s;}
+section.module.active{display:block;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+  padding:18px 20px; margin-bottom:18px; box-shadow:var(--shadow);
+}
+.card.accent-left{border-left:4px solid var(--accent);}
+.grid{display:grid; gap:16px;}
+.grid.cols-2{grid-template-columns:1fr 1fr;}
+.grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.grid.cols-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+@media(max-width:1000px){.grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr;}}
+
+.kpi{background:var(--panel2); border-radius:12px; padding:12px 14px; text-align:center; border:1px solid var(--border);}
+.kpi .v{font-size:1.4rem; font-weight:800; color:var(--accent);}
+.kpi .l{font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;}
+
+details.calc{
+  margin-top:10px; background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:8px 12px;
+}
+details.calc summary{cursor:pointer; font-weight:700; color:var(--accent2); font-size:.85rem;}
+details.calc .body{margin-top:8px; font-size:.86rem;}
+table{width:100%; border-collapse:collapse; font-size:.85rem; margin:8px 0;}
+table th, table td{border:1px solid var(--border); padding:6px 9px; text-align:left;}
+table th{background:var(--panel2);}
+.flow-step{
+  display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px;
+  background:var(--panel2); border:1px solid var(--border); cursor:pointer; margin-bottom:6px;
+  transition:.15s;
+}
+.flow-step:hover{border-color:var(--accent);}
+.flow-step.current{border-color:var(--accent); background:linear-gradient(90deg,#2dd4bf22,transparent);}
+.flow-step .n{
+  width:26px; height:26px; border-radius:50%; background:var(--accent); color:#06251f;
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.75rem; flex-shrink:0;
+}
+.tag-row{display:flex; gap:6px; flex-wrap:wrap; margin:8px 0;}
+.tooltip-wrap{position:relative; display:inline-block; border-bottom:1px dotted var(--muted); cursor:help;}
+.alert{padding:10px 14px; border-radius:10px; margin:8px 0; font-size:.85rem; border:1px solid;}
+.alert.ok{background:#22c55e15; border-color:#22c55e55; color:#4ade80;}
+.alert.warn{background:#f59e0b15; border-color:#f59e0b55; color:#fbbf24;}
+.alert.danger{background:#ef444415; border-color:#ef444455; color:#f87171;}
+.sem{display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:6px;}
+.sem.g{background:var(--ok); box-shadow:0 0 6px var(--ok);}
+.sem.a{background:var(--warn); box-shadow:0 0 6px var(--warn);}
+.sem.r{background:var(--danger); box-shadow:0 0 6px var(--danger);}
+canvas{max-width:100%; background:var(--panel2); border-radius:10px;}
+.slider-row{display:flex; align-items:center; gap:10px; margin:8px 0;}
+.slider-row label{min-width:220px; font-size:.84rem;}
+.slider-row input[type=range]{flex:1;}
+.slider-row .val{min-width:90px; text-align:right; font-weight:700; color:var(--accent);}
+.proc-map{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:18px 0;}
+.proc-node{
+  padding:10px 14px; border-radius:30px; border:2px solid var(--border); background:var(--panel2);
+  font-size:.78rem; font-weight:700; cursor:pointer; text-align:center; transition:.2s;
+}
+.proc-node:hover{border-color:var(--accent); transform:scale(1.05);}
+.proc-arrow{align-self:center; color:var(--muted); font-size:1.1rem;}
+.quiz-q{background:var(--panel2); padding:14px; border-radius:10px; margin-bottom:12px; border:1px solid var(--border);}
+.quiz-opt{display:block; width:100%; text-align:left; margin:4px 0; padding:8px 12px;}
+.quiz-opt.correct{background:#22c55e33; border-color:var(--ok);}
+.quiz-opt.wrong{background:#ef444433; border-color:var(--danger);}
+.glossary-item{border-bottom:1px solid var(--border); padding:10px 0;}
+.glossary-item b{color:var(--accent2);}
+.tree-node{margin-left:18px; border-left:2px dashed var(--border); padding-left:14px; margin-top:6px;}
+.tree-btn{
+  background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:7px 11px;
+  cursor:pointer; margin:3px 0; display:inline-block; font-size:.82rem;
+}
+.tree-btn:hover{border-color:var(--accent2);}
+.tree-detail{
+  background:var(--bg2); border:1px solid var(--accent2); border-radius:10px; padding:10px 14px;
+  margin:6px 0 10px 0; font-size:.84rem; display:none;
+}
+.tree-detail.show{display:block;}
+footer.app-footer{
+  text-align:center; padding:16px; color:var(--muted); font-size:.75rem; border-top:1px solid var(--border);
+}
+.route-pill{
+  padding:4px 10px; border-radius:999px; background:var(--panel2); border:1px solid var(--border);
+  font-size:.72rem; margin-right:4px;
+}
+.scrollx{overflow-x:auto;}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:.78rem; margin-top:6px;}
+.legend .dot{width:10px; height:10px; display:inline-block; border-radius:50%; margin-right:5px;}
+input[type=text]{background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:7px 10px; width:100%;}
+.hide{display:none;}
+
+
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:200;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-box{
+  background:var(--panel); border:1px solid var(--border); border-radius:16px;
+  padding:26px 30px; max-width:560px; width:100%; box-shadow:0 10px 40px rgba(0,0,0,.5);
+  max-height:88vh; overflow-y:auto;
+}
+.diag-opts{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+.diag-btn{
+  text-align:left; padding:10px 14px; background:var(--panel2); border:1px solid var(--border);
+  border-radius:10px; cursor:pointer; font-size:.86rem; color:var(--text);
+}
+.diag-btn:hover{border-color:var(--accent);}
+.diag-opts-row{display:flex; gap:8px; flex-wrap:wrap;}
+.diag-btn-sm{padding:7px 16px; border-radius:999px; background:var(--panel2); border:1px solid var(--border); cursor:pointer; color:var(--text);}
+.diag-btn-sm.sel{background:var(--accent); color:#06251f; border-color:var(--accent); font-weight:700;}
+.diag-btn.sel{border-color:var(--accent); background:linear-gradient(90deg,#2dd4bf22,transparent);}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+<header id="topbar">
+  <div class="logo">
+    🧮 Pricing No Vida <span class="sub">Dashboard interactivo · Basado en P. Parodi, "Pricing in General Insurance"</span>
+  </div>
+  <div class="selector-group">
+    <label>Nivel:</label>
+    <select id="selNivel" onchange="actualizarPerfil()">
+      <option value="inicial">Inicial</option>
+      <option value="intermedio" selected>Intermedio</option>
+      <option value="avanzado">Avanzado</option>
+      <option value="experto">Experto</option>
+    </select>
+  </div>
+  <div class="selector-group">
+    <label>Ruta:</label>
+    <select id="selRuta" onchange="actualizarPerfil()">
+      <option value="guiada" selected>A · Guiada completa</option>
+      <option value="concepto">B · Por concepto</option>
+      <option value="caso">C · Caso práctico</option>
+      <option value="linea">D · Línea de negocio</option>
+      <option value="reaseguro">E · Reaseguro</option>
+      <option value="repaso">F · Repaso avanzado</option>
+      <option value="explorar">G · Explorar dashboard libremente</option>
+    </select>
+  </div>
+  <div class="selector-group">
+    <label>Línea:</label>
+    <select id="selLinea" onchange="actualizarPerfil()">
+      <option value="rc" selected>RC / Responsabilidad Civil (Employers' Liability)</option>
+      <option value="auto">Autos</option>
+      <option value="propiedad">Propiedad</option>
+    </select>
+  </div>
+  <div class="spacer"></div>
+  <button class="ghost" onclick="toggleTheme()">🌗 Tema</button>
+  <button class="primary" onclick="abrirModal('modalDiagnostico')">🧭 Diagnóstico</button>
+</header>
+
+<div id="main-wrap">
+<nav id="sidebar">
+  <div class="grp-title">Inicio</div>
+  <a class="nav-item active" data-mod="m-inicio" onclick="irModulo('m-inicio')"><span class="num">0</span> Portada &amp; diagnóstico</a>
+  <a class="nav-item" data-mod="m-proceso" onclick="irModulo('m-proceso')"><span class="num">∞</span> Mapa del proceso</a>
+
+  <div class="grp-title">1 · Fundamentos</div>
+  <a class="nav-item" data-mod="m-riesgo" onclick="irModulo('m-riesgo')"><span class="num">1</span> Conocimiento del riesgo</a>
+  <a class="nav-item" data-mod="m-producto" onclick="irModulo('m-producto')"><span class="num">2</span> Producto / Cobertura</a>
+  <a class="nav-item" data-mod="m-datos" onclick="irModulo('m-datos')"><span class="num">3</span> Datos</a>
+  <a class="nav-item" data-mod="m-prep" onclick="irModulo('m-prep')"><span class="num">4</span> Preparación / Ajuste</a>
+
+  <div class="grp-title">2 · Modelización</div>
+  <a class="nav-item" data-mod="m-frecuencia" onclick="irModulo('m-frecuencia')"><span class="num">5</span> Frecuencia (lab)</a>
+  <a class="nav-item" data-mod="m-severidad" onclick="irModulo('m-severidad')"><span class="num">6</span> Severidad (lab)</a>
+  <a class="nav-item" data-mod="m-agregado" onclick="irModulo('m-agregado')"><span class="num">7</span> Pérdida agregada</a>
+  <a class="nav-item" data-mod="m-incertidumbre" onclick="irModulo('m-incertidumbre')"><span class="num">8</span> Incertidumbre</a>
+
+  <div class="grp-title">3 · De coste a prima</div>
+  <a class="nav-item" data-mod="m-costebruto" onclick="irModulo('m-costebruto')"><span class="num">9</span> Coste bruto</a>
+  <a class="nav-item" data-mod="m-reaseguro" onclick="irModulo('m-reaseguro')"><span class="num">10</span> Reaseguro (payout)</a>
+  <a class="nav-item" data-mod="m-costeneto" onclick="irModulo('m-costeneto')"><span class="num">11</span> Coste neto</a>
+  <a class="nav-item" data-mod="m-gastos" onclick="irModulo('m-gastos')"><span class="num">12</span> Gastos &amp; finanzas</a>
+  <a class="nav-item" data-mod="m-capital" onclick="irModulo('m-capital')"><span class="num">13</span> Capital &amp; beneficio</a>
+  <a class="nav-item" data-mod="m-puente" onclick="irModulo('m-puente')"><span class="num">14</span> Puente de prima (waterfall)</a>
+  <a class="nav-item" data-mod="m-comercial" onclick="irModulo('m-comercial')"><span class="num">15</span> Prima comercial</a>
+  <a class="nav-item" data-mod="m-monitor" onclick="irModulo('m-monitor')"><span class="num">16</span> Monitorización</a>
+
+  <div class="grp-title">4 · Herramientas transversales</div>
+  <a class="nav-item" data-mod="m-credibilidad" onclick="irModulo('m-credibilidad')"><span class="num">★</span> Credibilidad (Bühlmann)</a>
+  <a class="nav-item" data-mod="m-sensibilidad" onclick="irModulo('m-sensibilidad')"><span class="num">★</span> Sensibilidad (tornado)</a>
+  <a class="nav-item" data-mod="m-arboles" onclick="irModulo('m-arboles')"><span class="num">★</span> Árboles de decisión</a>
+  <a class="nav-item" data-mod="m-caso" onclick="irModulo('m-caso')"><span class="num">★</span> Caso integral trazable</a>
+
+  <div class="grp-title">5 · Consulta y repaso</div>
+  <a class="nav-item" data-mod="m-glosario" onclick="irModulo('m-glosario')"><span class="num">📖</span> Glosario ES/EN</a>
+  <a class="nav-item" data-mod="m-quiz" onclick="irModulo('m-quiz')"><span class="num">✓</span> Autoevaluación</a>
+  <a class="nav-item" data-mod="m-fuentes" onclick="irModulo('m-fuentes')"><span class="num">🔗</span> Fuentes</a>
+</nav>
+<main id="content">
+
+
+<section id="m-inicio" class="module active">
+  <h1>Bienvenido al curso-dashboard de Pricing en Seguros Generales</h1>
+  <div class="card accent-left">
+    <p>Este dashboard está construido a partir del libro <b>«Pricing in General Insurance»</b> de <b>Pietro Parodi</b> (CRC Press),
+    la referencia principal de todo el contenido. Su objetivo es que puedas recorrer, de forma interactiva, el proceso completo
+    de tarificación en seguros No Vida: desde los datos brutos de siniestros hasta la prima comercial final, con control y monitorización posterior.</p>
+    <div class="tag-row">
+      <span class="badge libro">Fuente: libro cargado</span>
+      <span class="badge amp">Ampliación didáctica: solo cuando se indique</span>
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>🎯 ¿Qué vas a poder hacer aquí?</h3>
+      <ul>
+        <li>Entender la <b>lógica completa</b> del proceso de pricing (no capítulo a capítulo, sino conectado).</li>
+        <li>Manipular <b>laboratorios interactivos</b> de frecuencia, severidad y pérdida agregada.</li>
+        <li>Seguir un <b>caso práctico trazable</b> (RC / Employers' Liability) con cifras reales del libro.</li>
+        <li>Ver cómo el reaseguro transforma el coste bruto en coste neto (payout).</li>
+        <li>Construir el <b>puente de prima</b> (waterfall) de coste a prima comercial.</li>
+        <li>Analizar <b>sensibilidad</b> y escenarios, y preparar la <b>monitorización</b> continua.</li>
+        <li>Repasar con un <b>glosario</b> bilingüe y una <b>autoevaluación</b>.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🧭 Tu perfil actual</h3>
+      <p>Nivel: <b id="txtNivelActual">Intermedio</b> · Ruta: <b id="txtRutaActual">Guiada completa</b> · Línea: <b id="txtLineaActual">RC (Employers' Liability)</b></p>
+      <p class="small">Puedes cambiar estos selectores en cualquier momento desde la cabecera superior. El contenido de las fórmulas y el caso práctico se adapta a la línea de negocio elegida.</p>
+      <div class="alert ok"><span class="sem g"></span> El libro está correctamente cargado como fuente principal de este dashboard.</div>
+      <button class="primary" onclick="irModulo('m-proceso')">Ir al mapa del proceso ➜</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📚 Jerarquía de fuentes</h3>
+    <table>
+      <tr><th>Prioridad</th><th>Fuente</th><th>Uso en este dashboard</th></tr>
+      <tr><td>1</td><td>Libro de Pietro Parodi</td><td>Base obligatoria: conceptos, fórmulas, proceso, terminología, ejemplos (Cap. 1, 6, 11, 13–22, 24–26, etc.)</td></tr>
+      <tr><td>2</td><td>Archivos adicionales del usuario</td><td>Ninguno cargado en esta sesión</td></tr>
+      <tr><td>3</td><td>Ampliación didáctica</td><td>Solo para conectar ideas; etiquetada explícitamente como tal, nunca atribuida al autor</td></tr>
+    </table>
+  </div>
+</section>
+
+
+<section id="m-proceso" class="module">
+  <h1>🗺️ Mapa interactivo del proceso de pricing</h1>
+  <div class="card">
+    <p>El pricing en seguros generales <b>no es una fórmula aislada, sino un proceso</b> con una secuencia lógica de etapas
+    (ver Parodi, Cap. 1 y Cap. 19). Haz clic en cada nodo para ver su posición, su objetivo y saltar directamente al módulo correspondiente.</p>
+    <div class="proc-map" id="procMap"></div>
+    <div id="procDetalle" class="tree-detail show">
+      <b>Selecciona una etapa del proceso arriba ☝️ para ver su detalle.</b>
+    </div>
+  </div>
+  <div class="card">
+    <h3>🔁 El ciclo completo</h3>
+    <p class="small">El proceso es cíclico: tras la monitorización, los resultados reales retroalimentan los supuestos de la siguiente tarificación (control actuarial continuo).</p>
+    <table>
+      <tr><th>Bloque</th><th>Etapas del libro</th><th>Pregunta que responde</th></tr>
+      <tr><td>Riesgo &amp; Producto</td><td>Cap. 2–5, 7</td><td>¿Qué estoy asegurando y en qué mercado?</td></tr>
+      <tr><td>Datos</td><td>Cap. 8–10</td><td>¿Qué información tengo y cómo la preparo?</td></tr>
+      <tr><td>Costeo del riesgo (gross)</td><td>Cap. 6, 11–18</td><td>¿Cuánto cuesta el riesgo en bruto, con su incertidumbre?</td></tr>
+      <tr><td>Reaseguro / Cesión</td><td>Cap. 20–22</td><td>¿Qué parte del coste se transfiere?</td></tr>
+      <tr><td>De coste a prima</td><td>Cap. 19</td><td>¿Qué cargar por gastos, capital y beneficio?</td></tr>
+      <tr><td>Comercial</td><td>Cap. 19.3–19.4</td><td>¿Qué prima se cobra realmente en el mercado?</td></tr>
+      <tr><td>Factores de riesgo</td><td>Cap. 25–27</td><td>¿Cómo diferenciar precios entre asegurados? (credibilidad, GLM)</td></tr>
+    </table>
+  </div>
+</section>
+
+
+<section id="m-riesgo" class="module">
+  <h1>1 · Conocimiento del riesgo</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 7 "Familiarise Yourself with the Risk"</span>
+    <h3>Concepto</h3>
+    <p>Antes de tocar un solo número, el actuario debe <b>familiarizarse con el riesgo</b>: entender el negocio del asegurado,
+    su operativa, su exposición, el contexto legal/regulatorio y el histórico de siniestros desde un punto de vista cualitativo.
+    Parodi insiste en que esta etapa suele infravalorarse, pero condiciona todas las decisiones posteriores (qué datos pedir,
+    qué modelo usar, qué ajustes son razonables).</p>
+  </div>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Intuición</h3>
+      <p>Imagina que te piden tarificar la RC de una empresa sin saber si fabrica juguetes o produce explosivos. El número puede
+      ser el mismo en una tabla, pero el riesgo subyacente es radicalmente distinto. "Conocer el riesgo" es poner ese número en contexto.</p>
+    </div>
+    <div class="card">
+      <h3>Desarrollo actuarial</h3>
+      <ul>
+        <li>Visitas al asegurado / cuestionarios de suscripción.</li>
+        <li>Entender el proceso operativo (p.ej. nº de empleados, tipo de maquinaria, ubicaciones).</li>
+        <li>Revisar la estructura de póliza histórica y los cambios de cobertura/legislación.</li>
+        <li>Identificar el contexto de mercado (ciclo de suscripción, Cap. 4–5).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Ejemplo (caso guía: Employers' Liability, Cap. 1 del libro)</h3>
+    <p>El libro introduce un ejemplo de responsabilidad patronal con 10 años de pérdidas agregadas. Antes de calcular nada,
+    hay que saber: ¿la plantilla ha cambiado?, ¿ha habido cambios legislativos (p.ej. reformas Jackson)?, ¿la cobertura es 100% desde el origen
+    o hay una estructura de cuota compartida (en el ejemplo, 95%/5%)?</p>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> Limitación: la información cualitativa es difícil de cuantificar y a menudo depende del juicio experto del suscriptor.</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Esta etapa no tiene simulador propio: es el punto de partida narrativo que verás reflejado como "supuestos de contexto" en el caso práctico integral (módulo ★ Caso integral).</p>
+  </div>
+</section>
+
+
+<section id="m-producto" class="module">
+  <h1>2 · Definición del producto / cobertura</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 2 (Productos) y Cap. 3 (Estructura de póliza)</span>
+    <h3>Concepto</h3>
+    <p>La <b>estructura de póliza</b> determina qué parte de cada siniestro paga el asegurador: deducibles (EEL), límites, deducible agregado anual (AAD),
+    coparticipación (quota share), reinstalaciones, etc. Esta estructura es el "filtro" que convierte las pérdidas brutas en pérdidas cedidas al asegurador/reasegurador.</p>
+  </div>
+  <div class="grid cols-3">
+    <div class="card"><h4>EEL (Each-and-Every-Loss)</h4><p class="small">Deducible aplicado a cada siniestro individualmente antes de que el asegurador pague.</p></div>
+    <div class="card"><h4>AAD (Annual Aggregate Deductible)</h4><p class="small">Deducible agregado anual: la retención del asegurado antes de que el asegurador empiece a pagar en el año.</p></div>
+    <div class="card"><h4>Límite (Limit)</h4><p class="small">Importe máximo que paga el asegurador, por siniestro y/o en agregado anual.</p></div>
+  </div>
+  <div class="card">
+    <h3>Ejemplo (caso guía burning cost, Cap. 11)</h3>
+    <table>
+      <tr><th>Parámetro</th><th>Valor</th><th>Tipo</th></tr>
+      <tr><td>EEL</td><td>£100,000</td><td><span class="badge dato">Dato del caso</span></td></tr>
+      <tr><td>AAD</td><td>£3,200,000 (ejemplo texto) / £2,500,000 (ejemplo figura)</td><td><span class="badge dato">Dato del caso</span></td></tr>
+      <tr><td>Límite</td><td>£5,000,000</td><td><span class="badge dato">Dato del caso</span></td></tr>
+    </table>
+    <p class="small">Nota: el libro usa estas cifras en el estudio de burning cost (Cap. 11) sobre una cartera de responsabilidad civil pública (Public Liability) con 11 años de experiencia.</p>
+  </div>
+  <div class="card">
+    <h3>Decisión</h3>
+    <p>La elección de deducibles/límites afecta directamente a la severidad "retenida" vs "cedida": a mayor deducible, menor frecuencia de siniestros que tocan al asegurador, pero mayor severidad media de los que sí lo hacen (truncamiento por la izquierda).</p>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Los parámetros de póliza (EEL, AAD, Límite) son <b>inputs editables</b> en el laboratorio de severidad y en el módulo de reaseguro (payout).</p>
+  </div>
+</section>
+
+
+<section id="m-datos" class="module">
+  <h1>3 · Datos</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 8 "Data Requirements for Pricing"</span>
+    <h3>Concepto</h3>
+    <p>El proceso de pricing requiere tres grandes bloques de datos: <b>datos de siniestros</b> (individual loss data), <b>datos de exposición</b>
+    (exposure data) y <b>datos de cobertura/póliza</b> (cover data). A estos se añade información de contexto de mercado/portfolio.</p>
+  </div>
+  <div class="grid cols-3">
+    <div class="card">
+      <h4>📄 Datos de siniestros</h4>
+      <ul class="small">
+        <li>Fecha de ocurrencia</li>
+        <li>Fecha de notificación (reporting date)</li>
+        <li>Fecha de cuantificación</li>
+        <li>Importe pagado / reservado</li>
+        <li>Historial de desarrollo (triangulación)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>📊 Datos de exposición</h4>
+      <ul class="small">
+        <li>Nº vehículos-año, empleados-año, facturación (turnover), nómina (wageroll)…</li>
+        <li>Debe ser una medida proporcional al riesgo</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>📜 Datos de cobertura</h4>
+      <ul class="small">
+        <li>Deducibles, límites, coparticipación</li>
+        <li>Vigencia y cambios históricos de cobertura</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Ejemplo numérico (Cap. 1, tabla de pérdidas EL)</h3>
+    <div class="scrollx">
+    <table id="tablaDatosEjemplo">
+      <tr><th>Año</th><th>Pérdidas (£)</th></tr>
+      <tr><td>2005</td><td>890,882</td></tr>
+      <tr><td>2006</td><td>1,055,998</td></tr>
+      <tr><td>2007</td><td>936,637</td></tr>
+      <tr><td>2008</td><td>1,153,948</td></tr>
+      <tr><td>2009</td><td>1,290,733</td></tr>
+      <tr><td>2010</td><td>1,548,879</td></tr>
+      <tr><td>2011</td><td>1,973,818</td></tr>
+      <tr><td>2012</td><td>1,448,684</td></tr>
+      <tr><td>2013</td><td>1,831,386</td></tr>
+      <tr><td>2014</td><td>842,957 <span class="badge supuesto">incompleto, solo hasta 30-jun</span></td></tr>
+    </table>
+    </div>
+    <p class="small"><span class="badge dato">Dato del caso</span> Tabla original del Capítulo 1 del libro (Figura 1.1), usada como caso guía de "arranque suave" del proceso.</p>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> Limitación: estos datos agregados por año no permiten separar frecuencia y severidad, ni aplicar deducibles distintos a los históricos — por eso el libro migra hacia datos de siniestro individuales (Cap. 6 en adelante).</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Esta tabla reaparece en el módulo <b>★ Caso integral</b> y en <b>Preparación/Ajuste</b>, donde se revaloriza y corrige paso a paso.</p>
+  </div>
+</section>
+
+
+<section id="m-prep" class="module">
+  <h1>4 · Preparación de datos y ajuste</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 1 (ejemplo), Cap. 9 (inflación), Cap. 10 (preparación), Cap. 13 (IBNR), Cap. 15 (IBNER)</span>
+    <h3>Concepto</h3>
+    <p>Antes de modelizar, los datos históricos deben llevarse a "términos actuales": corregir por <b>IBNR</b> (siniestros ocurridos pero no reportados),
+    <b>inflación de siniestros</b> (claims inflation, distinta del IPC), <b>cambios de exposición</b> y <b>IBNER</b> (incurred but not enough reserved).
+    Esto es exactamente lo que el libro hace paso a paso en su "ejemplo elemental" del Capítulo 1.</p>
+  </div>
+
+  <div class="card">
+    <h3>🧪 Laboratorio interactivo: reproduce el ejemplo del Capítulo 1</h3>
+    <p class="small">Ajusta los supuestos y observa cómo cambia la estimación de pérdidas esperadas para 2015. Los valores por defecto son los del libro.</p>
+    <div class="slider-row">
+      <label>Inflación de siniestros (r), % anual</label>
+      <input type="range" id="prepInfl" min="0" max="15" step="0.5" value="5" oninput="calcPrep()">
+      <span class="val" id="prepInflVal">5.0%</span>
+    </div>
+    <div class="slider-row">
+      <label>Inflación de exposición / salarios (r'), % anual</label>
+      <input type="range" id="prepInflExp" min="0" max="15" step="0.5" value="4" oninput="calcPrep()">
+      <span class="val" id="prepInflExpVal">4.0%</span>
+    </div>
+    <div class="slider-row">
+      <label>Excluir último año por IBNR (inmaduro)</label>
+      <input type="checkbox" id="prepExcluir2014" checked onchange="calcPrep()">
+      <span class="val" id="prepExcluirVal">Sí</span>
+    </div>
+    <div class="scrollx">
+    <table id="tablaPrepResultado"></table>
+    </div>
+    <div class="grid cols-3">
+      <div class="kpi"><div class="v" id="kpiPrepPromedioBruto">—</div><div class="l">Media simple bruta (sin ajustes)</div></div>
+      <div class="kpi"><div class="v" id="kpiPrepRevaluado">—</div><div class="l">Media revalorizada por inflación</div></div>
+      <div class="kpi"><div class="v" id="kpiPrepFinal">—</div><div class="l">Media revalorizada + exposición</div></div>
+    </div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Ver fórmula y sustitución</summary>
+      <div class="body">
+        <p><b>Revalorización de siniestros:</b> <code>X_rev@t*(t) = X(t) × (1+r)^(t*−t)</code> (Ecuación tipo del Cap. 1, análoga a la 1.1 del libro).</p>
+        <p><b>Ajuste por exposición:</b> <code>X_ajustada(t) = X_rev(t) × RE(t*)/RE(t)</code>, donde <code>RE(t)=E(t)×(1+r')^(t*−t)</code>.</p>
+        <p><b>Variables:</b> t* = año a tarificar (2015); t = año histórico; r = inflación de siniestros; r' = inflación de exposición (salarios).</p>
+        <p><b>Unidad:</b> libras esterlinas (£), igual que el caso original del libro.</p>
+        <p><b>Supuestos:</b> todos los siniestros de un año ocurren en el punto medio del año; inflación constante; sin cambios de perfil de riesgo (Sección 1.1.1.4 del libro).</p>
+        <p><b>Limitación:</b> excluir el último año es un "truco" simplificado para evitar un análisis IBNR completo (ver Cap. 13 para el método de triángulos).</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>IBNR (Cap. 13)</h3>
+      <p class="small">Incurred But Not Reported: siniestros ya ocurridos pero aún no notificados al asegurador. Se estima habitualmente con <b>métodos de desarrollo de triángulos</b> (chain ladder) sobre triángulos de número de siniestros.</p>
+      <p class="small"><b>Fórmula chain-ladder (factor de desarrollo):</b> <code>FD_k = Σ C(i,k+1) / Σ C(i,k)</code>, aplicado sucesivamente hasta "ultimar" cada año de origen.</p>
+    </div>
+    <div class="card">
+      <h3>IBNER (Cap. 15)</h3>
+      <p class="small">Incurred But Not Enough Reserved: el importe reservado para un siniestro abierto puede estar sub- o sobre-estimado. Se corrige con factores de desarrollo de importes (en vez de conteos), idealmente a partir de triangulaciones de importes o datos históricos de reserva vs. pago final.</p>
+    </div>
+  </div>
+
+  <div class="alert warn"><span class="sem a"></span> El propio libro advierte: estas correcciones "añaden capas de incertidumbre y arbitrariedad", por lo que siempre deben documentarse y comunicarse explícitamente (Sección 1.1.1.7).</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Este laboratorio alimenta directamente el módulo <b>★ Caso integral</b> y el punto de partida del <b>Coste bruto</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-frecuencia" class="module">
+  <h1>5 · Modelización de la frecuencia</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 13 (IBNR en conteos), Cap. 14 (Selección y calibración)</span>
+    <h3>Concepto</h3>
+    <p>El modelo de frecuencia da la <b>probabilidad del número de siniestros</b> en un periodo (p.ej. año de póliza). Los tres modelos de conteo más usados son
+    <b>Binomial</b>, <b>Poisson</b> y <b>Binomial Negativa</b>, los tres miembros de la clase Panjer (a,b,0), caracterizada por
+    <code>p_k/p_(k-1) = a + b/k</code> (Ec. 14.1 del libro).</p>
+  </div>
+  <div class="grid cols-3">
+    <div class="card"><h4>Binomial</h4><p class="small">Varianza/Media &lt; 1. Útil con modelo de riesgo individual (n riesgos, cada uno con prob. p de siniestro).</p></div>
+    <div class="card"><h4>Poisson</h4><p class="small">Varianza/Media = 1. El más usado en el modelo de riesgo colectivo. Un parámetro: λ (frecuencia media).</p></div>
+    <div class="card"><h4>Binomial Negativa</h4><p class="small">Varianza/Media &gt; 1 (sobredispersión). Captura heterogeneidad entre asegurados o entre años.</p></div>
+  </div>
+
+  <div class="card">
+    <h3>🧪 Laboratorio de frecuencia</h3>
+    <p class="small">Elige el modelo y sus parámetros. Compara la función de masa de probabilidad (PMF) y la cola acumulada.</p>
+    <div class="slider-row">
+      <label>Modelo</label>
+      <select id="freqModelo" onchange="calcFrecuencia()">
+        <option value="poisson" selected>Poisson(λ)</option>
+        <option value="binomial">Binomial(n,p)</option>
+        <option value="negbin">Binomial Negativa(r,p)</option>
+      </select>
+    </div>
+    <div class="slider-row" id="rowLambda">
+      <label>λ (frecuencia media anual)</label>
+      <input type="range" id="freqLambda" min="0.5" max="20" step="0.5" value="7" oninput="calcFrecuencia()">
+      <span class="val" id="freqLambdaVal">7.0</span>
+    </div>
+    <div class="slider-row hide" id="rowN">
+      <label>n (nº máx. de riesgos/siniestros)</label>
+      <input type="range" id="freqN" min="5" max="100" step="1" value="20" oninput="calcFrecuencia()">
+      <span class="val" id="freqNVal">20</span>
+    </div>
+    <div class="slider-row hide" id="rowP">
+      <label>p (prob. de siniestro por riesgo)</label>
+      <input type="range" id="freqP" min="0.01" max="0.9" step="0.01" value="0.35" oninput="calcFrecuencia()">
+      <span class="val" id="freqPVal">0.35</span>
+    </div>
+    <div class="slider-row hide" id="rowK">
+      <label>k (dispersión, binom. negativa)</label>
+      <input type="range" id="freqK" min="0.5" max="20" step="0.5" value="5" oninput="calcFrecuencia()">
+      <span class="val" id="freqKVal">5.0</span>
+    </div>
+    <canvas id="chartFrecuencia" height="110"></canvas>
+    <div class="grid cols-4">
+      <div class="kpi"><div class="v" id="kpiFreqMedia">—</div><div class="l">Media E[N]</div></div>
+      <div class="kpi"><div class="v" id="kpiFreqVar">—</div><div class="l">Varianza Var[N]</div></div>
+      <div class="kpi"><div class="v" id="kpiFreqRatio">—</div><div class="l">Ratio Var/Media</div></div>
+      <div class="kpi"><div class="v" id="kpiFreqP4">—</div><div class="l">P(N ≤ 4)</div></div>
+    </div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Fórmulas de cada modelo</summary>
+      <div class="body">
+        <p><b>Poisson:</b> <code>P(N=k) = e^(-λ) λ^k / k!</code> &nbsp; Media = λ, Varianza = λ.</p>
+        <p><b>Binomial:</b> <code>P(N=k) = C(n,k) p^k (1-p)^(n-k)</code> &nbsp; Media = np, Varianza = np(1-p).</p>
+        <p><b>Binomial Negativa:</b> <code>P(N=k) = C(k+r-1,k) p^r (1-p)^k</code> &nbsp; Media = r(1-p)/p, Varianza = r(1-p)/p².</p>
+        <p><b>Interpretación:</b> el ratio Varianza/Media es el criterio práctico que sugiere el libro para orientar la elección del modelo (Cap. 14), aunque advierte que "las cosas son más complicadas que eso" — conviene validar con bondad de ajuste y criterio de negocio.</p>
+        <p><b>Limitaciones:</b> con solo 5–10 años de historia, es difícil discriminar estadísticamente entre modelos; el libro recomienda apoyarse en un pequeño conjunto de modelos bien entendidos (aprendizaje estadístico, Sección 12.3) en lugar de "carpet-bombing" con muchas distribuciones.</p>
+      </div>
+    </details>
+  </div>
+  <div class="alert ok"><span class="sem g"></span> Validación recomendada: comparar la media y varianza empíricas del histórico de conteos frente a las del modelo ajustado.</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">El modelo de frecuencia seleccionado aquí se combina con el de severidad en el módulo <b>7 · Pérdida agregada</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-severidad" class="module">
+  <h1>6 · Modelización de la severidad</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 15 (IBNER y ajustes), Cap. 16 (Selección y calibración de severidad)</span>
+    <h3>Concepto</h3>
+    <p>El modelo de severidad da la distribución del <b>importe individual</b> de cada siniestro. El libro insiste en que mirar solo la media
+    de importes (como en burning cost tradicional) es insuficiente para responder preguntas como "¿qué límite debo comprar?" o
+    "¿qué deducible es adecuado?". Para ello se necesita la <b>distribución completa</b>, especialmente su cola.</p>
+  </div>
+  <div class="grid cols-3">
+    <div class="card"><h4>Lognormal</h4><p class="small">Buena para la "masa" de siniestros medianos; cola moderada.</p></div>
+    <div class="card"><h4>Pareto (de un parámetro)</h4><p class="small">El libro destaca que en escala log-log, los datos siguen una recta si y solo si proceden de una Pareto de un parámetro — útil para analizar la cola.</p></div>
+    <div class="card"><h4>Gamma</h4><p class="small">Alternativa flexible para severidad, especialmente en modelos GLM (Cap. 26).</p></div>
+  </div>
+
+  <div class="card">
+    <h3>🧪 Laboratorio de severidad con deducible y límite de póliza</h3>
+    <div class="slider-row">
+      <label>Distribución</label>
+      <select id="sevDist" onchange="calcSeveridad()">
+        <option value="lognormal" selected>Lognormal(μ,σ)</option>
+        <option value="pareto">Pareto(α, x_min)</option>
+        <option value="gamma">Gamma(forma k, escala θ)</option>
+      </select>
+    </div>
+    <div class="slider-row"><label>Parámetro 1 (μ / α / forma k)</label><input type="range" id="sevP1" min="0.1" max="10" step="0.1" value="8.5" oninput="calcSeveridad()"><span class="val" id="sevP1Val">8.5</span></div>
+    <div class="slider-row"><label>Parámetro 2 (σ / x_min / escala θ)</label><input type="range" id="sevP2" min="0.1" max="2" step="0.05" value="1.2" oninput="calcSeveridad()"><span class="val" id="sevP2Val">1.2</span></div>
+    <div class="slider-row"><label>Deducible EEL (£)</label><input type="range" id="sevDed" min="0" max="500000" step="5000" value="100000" oninput="calcSeveridad()"><span class="val" id="sevDedVal">£100,000</span></div>
+    <div class="slider-row"><label>Límite por siniestro (£)</label><input type="range" id="sevLim" min="100000" max="10000000" step="100000" value="5000000" oninput="calcSeveridad()"><span class="val" id="sevLimVal">£5,000,000</span></div>
+    <canvas id="chartSeveridad" height="110"></canvas>
+    <div class="grid cols-4">
+      <div class="kpi"><div class="v" id="kpiSevMediaGU">—</div><div class="l">Media "ground-up" (sin modificar)</div></div>
+      <div class="kpi"><div class="v" id="kpiSevMediaRet">—</div><div class="l">Media retenida (bajo deducible)</div></div>
+      <div class="kpi"><div class="v" id="kpiSevMediaCed">—</div><div class="l">Media cedida (entre ded. y límite)</div></div>
+      <div class="kpi"><div class="v" id="kpiSevProbExced">—</div><div class="l">P(X &gt; límite+ded.)</div></div>
+    </div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Fórmulas y efecto de deducible/límite</summary>
+      <div class="body">
+        <p><b>Severidad "ground-up":</b> E[X] según el modelo elegido.</p>
+        <p><b>Importe retenido por el asegurado (con EEL=d):</b> <code>min(X,d)</code>.</p>
+        <p><b>Importe cedido al asegurador (con deducible d y límite l):</b> <code>min(max(X-d,0), l)</code>.</p>
+        <p><b>Nota del libro:</b> aplicar un deducible produce truncamiento por la izquierda de la distribución de severidad "vista" por el asegurador — la severidad media de los siniestros que SÍ superan el deducible es mayor que la media global.</p>
+        <p><b>Limitación:</b> elegir el modelo de severidad "a ciegas" probando muchas distribuciones y quedándonos con la de mejor ajuste (goodness-of-fit) es un enfoque poco fiable según el libro (Cap. 16, "a subtle problem") — conviene usar criterio experto sobre la cola y contrastar con información de mercado para grandes pérdidas.</p>
+      </div>
+    </details>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> Cuidado: nunca mezclar severidad "ground-up" con datos ya truncados por un deducible histórico sin corregir — es una fuente común de sesgo (y de doble contabilización si además se aplica un nuevo deducible).</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Esta severidad se combina con la frecuencia en el módulo <b>7 · Pérdida agregada</b> para obtener la distribución total de pérdidas.</p>
+  </div>
+</section>
+
+
+<section id="m-agregado" class="module">
+  <h1>7 · Pérdida agregada (modelo colectivo)</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 6 (modelo colectivo/individual), Cap. 17 (Aggregate Loss Modelling)</span>
+    <h3>Concepto</h3>
+    <p>La pérdida agregada <code>S = X₁ + X₂ + ... + X_N</code>, donde N es el número de siniestros (frecuencia) y cada X_i es un importe
+    (severidad), es la variable que realmente interesa para decisiones de gestión de riesgo. Calcular su distribución exacta es,
+    salvo casos especiales, <b>analíticamente intratable</b> (requiere convolución, Ec. 17.1–17.3 del libro) — por eso se recurre a métodos
+    aproximados: <b>Simulación de Monte Carlo</b>, Transformada Rápida de Fourier (FFT) o recursión de Panjer.</p>
+  </div>
+  <div class="card">
+    <h3>🧪 Laboratorio: simulación Monte Carlo didáctica de S</h3>
+    <p class="small">Usa los parámetros de frecuencia y severidad definidos en los laboratorios anteriores (o ajusta aquí directamente) para simular la distribución agregada anual.</p>
+    <div class="slider-row"><label>Nº de simulaciones (años)</label><input type="range" id="aggNSim" min="200" max="20000" step="200" value="5000" oninput="calcAgregado()"><span class="val" id="aggNSimVal">5000</span></div>
+    <div class="slider-row"><label>λ frecuencia (Poisson)</label><input type="range" id="aggLambda" min="0.5" max="30" step="0.5" value="7" oninput="calcAgregado()"><span class="val" id="aggLambdaVal">7.0</span></div>
+    <div class="slider-row"><label>μ severidad (lognormal)</label><input type="range" id="aggMu" min="5" max="12" step="0.1" value="8.5" oninput="calcAgregado()"><span class="val" id="aggMuVal">8.5</span></div>
+    <div class="slider-row"><label>σ severidad (lognormal)</label><input type="range" id="aggSigma" min="0.2" max="2.5" step="0.05" value="1.2" oninput="calcAgregado()"><span class="val" id="aggSigmaVal">1.2</span></div>
+    <button class="primary" onclick="calcAgregado()">▶ Ejecutar simulación</button>
+    <canvas id="chartAgregado" height="110"></canvas>
+    <div class="grid cols-4">
+      <div class="kpi"><div class="v" id="kpiAggMedia">—</div><div class="l">Media de S</div></div>
+      <div class="kpi"><div class="v" id="kpiAggSD">—</div><div class="l">Desv. estándar de S</div></div>
+      <div class="kpi"><div class="v" id="kpiAggVaR99">—</div><div class="l">Percentil 99% (VaR)</div></div>
+      <div class="kpi"><div class="v" id="kpiAggTVaR99">—</div><div class="l">TVaR 99% (media cola)</div></div>
+    </div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Método y fórmulas</summary>
+      <div class="body">
+        <p><b>Algoritmo Monte Carlo (simplificado del libro, Cap. 17):</b></p>
+        <ol>
+          <li>Simular N ~ Poisson(λ) para cada "año" simulado.</li>
+          <li>Simular N importes X_i ~ Lognormal(μ,σ).</li>
+          <li>Sumar S = ΣX_i para ese año.</li>
+          <li>Repetir miles de veces y construir la distribución empírica de S.</li>
+        </ol>
+        <p><b>Media teórica:</b> <code>E[S] = E[N] × E[X]</code> (propiedad básica citada en el libro al inicio del Cap. 17).</p>
+        <p><b>Limitaciones:</b> el error de Monte Carlo depende de 1/√(nº simulaciones); para colas extremas (percentiles 99.5%+) se necesitan muchas más simulaciones que las aquí mostradas con fines didácticos.</p>
+      </div>
+    </details>
+  </div>
+  <div class="alert ok"><span class="sem g"></span> Validación: comparar la media simulada con la fórmula E[N]×E[X]; deben coincidir aproximadamente.</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">La distribución agregada "gross" (bruta) de este módulo es el punto de partida de <b>9 · Coste bruto</b> y de la aplicación del <b>10 · Reaseguro</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-incertidumbre" class="module">
+  <h1>8 · Identificación y comunicación de la incertidumbre</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 18 "Identifying, Measuring and Communicating Uncertainty"</span>
+    <h3>Concepto</h3>
+    <p>El libro distingue varios tipos de incertidumbre que deben identificarse y, cuando sea posible, cuantificarse por separado, para evitar
+    <b>doble contabilización</b> al cargar la prima:</p>
+    <ul>
+      <li><b>Incertidumbre de proceso:</b> fluctuación intrínseca del proceso de pérdidas (año a año), incluso si el modelo fuera perfecto.</li>
+      <li><b>Incertidumbre de parámetro:</b> datos limitados → los parámetros estimados (λ, μ, σ…) tienen error de estimación.</li>
+      <li><b>Incertidumbre de modelo:</b> hemos elegido una familia de distribución que puede no ser la "verdadera".</li>
+      <li><b>Incertidumbre de datos:</b> calidad/consistencia de los datos de origen.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Desarrollo actuarial — relación con el puente de prima (Cap. 19)</h3>
+    <p>En la componente "Allowance for uncertainty" del puente de prima (Sección 19.1.2), el libro cita una fórmula habitual de mercado:</p>
+    <p><code>Loading = α × SD(proceso)</code>, con α entre el 25% y el 50% típicamente.</p>
+    <p class="small">El libro cuestiona esta práctica cuando hay suficiente diversificación de cartera (la ley de grandes números debería compensar), pero reconoce que tiene sentido cuando la diversificación es limitada: carteras cautivas, pocos clientes grandes, etc.</p>
+  </div>
+  <div class="alert danger"><span class="sem r"></span> Riesgo de doble contabilización: si ya se incluyó un margen de prudencia dentro del modelo de severidad/frecuencia (p.ej. parámetros "conservadores") y además se añade un loading explícito de incertidumbre, el margen total puede quedar sobreestimado sin que nadie lo note.</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Este loading de incertidumbre es uno de los componentes editables del módulo <b>14 · Puente de prima</b> y del <b>Tornado de sensibilidad</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-costebruto" class="module">
+  <h1>9 · Coste bruto (risk costing, gross)</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Sección 1.1.1, Fig. 19.1</span>
+    <h3>Concepto</h3>
+    <p>El <b>coste bruto</b> es la estimación de las pérdidas futuras <b>sin descontar</b> quién las paga finalmente (asegurado vs. (re)asegurador).
+    Es el resultado directo de combinar el modelo de frecuencia y de severidad (vía el modelo agregado) tras todos los ajustes de preparación de datos.</p>
+  </div>
+  <div class="card">
+    <h3>Flujo resumen (según Fig. 19.1 del libro)</h3>
+    <div class="flow-step"><div class="n">1</div> Familiarizarse con el riesgo</div>
+    <div class="flow-step"><div class="n">2</div> Datos: siniestros + exposición + cobertura</div>
+    <div class="flow-step"><div class="n">3</div> Preparación de datos (revalorización, IBNR, IBNER)</div>
+    <div class="flow-step current"><div class="n">4</div> <b>Costeo del riesgo (bruto)</b> → frecuencia × severidad → agregado</div>
+    <div class="flow-step"><div class="n">5</div> Costeo del riesgo (cedido) → aplicar estructura de reaseguro</div>
+  </div>
+  <div class="card">
+    <h3>Ejemplo numérico (caso guía Cap.1)</h3>
+    <div class="kpi" style="display:inline-block; margin-right:10px;"><div class="v">£2.08M</div><div class="l">Pérdidas brutas esperadas 2015 (tras IBNR, inflación, exposición)</div></div>
+    <p class="small"><span class="badge resultado">Resultado del libro</span> Esta cifra surge de promediar 2005–2013 tras revalorizar por inflación de siniestros (5%) y corregir por exposición (wageroll, inflación salarial 4%).</p>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Este valor de coste bruto conecta el módulo <b>4 · Preparación</b> con el módulo <b>10 · Reaseguro</b> y alimenta directamente el <b>Puente de prima</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-reaseguro" class="module">
+  <h1>10 · Reaseguro — estructura y payout</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 20 (Experience Rating XL), Cap. 21 (Exposure Rating Property), Cap. 22 (ILF Liability)</span>
+    <h3>Concepto</h3>
+    <p>El reaseguro no proporcional (Excess of Loss, XL) cubre la parte de cada siniestro que excede un umbral (<i>attachment point</i>) hasta un límite
+    (<i>layer</i>). Se habla de una capa como <b>"L xs A"</b> (Limit excess of Attachment), p.ej. <code>£3M xs £2M</code> significa que el reasegurador paga
+    hasta £3M por encima de los primeros £2M que retiene el cedente.</p>
+  </div>
+  <div class="card">
+    <h3>🧪 Laboratorio: payout de una capa de reaseguro XL</h3>
+    <p class="small">Introduce el importe de un siniestro bruto y la estructura de la capa para ver el reparto cedente/reasegurador.</p>
+    <div class="slider-row"><label>Importe del siniestro bruto (£)</label><input type="range" id="reasX" min="0" max="10000000" step="50000" value="2500000" oninput="calcReaseguro()"><span class="val" id="reasXVal">£2,500,000</span></div>
+    <div class="slider-row"><label>Punto de ataque / Attachment (£)</label><input type="range" id="reasAtt" min="0" max="5000000" step="50000" value="2000000" oninput="calcReaseguro()"><span class="val" id="reasAttVal">£2,000,000</span></div>
+    <div class="slider-row"><label>Límite de la capa (£)</label><input type="range" id="reasLim" min="100000" max="10000000" step="50000" value="3000000" oninput="calcReaseguro()"><span class="val" id="reasLimVal">£3,000,000</span></div>
+    <div class="slider-row"><label>Umbral de notificación al reasegurador (£)</label><input type="range" id="reasRep" min="0" max="2000000" step="25000" value="500000" oninput="calcReaseguro()"><span class="val" id="reasRepVal">£500,000</span></div>
+    <canvas id="chartReaseguro" height="90"></canvas>
+    <div class="grid cols-3">
+      <div class="kpi"><div class="v" id="kpiReasRetenido">—</div><div class="l">Retenido por el cedente</div></div>
+      <div class="kpi"><div class="v" id="kpiReasCedido">—</div><div class="l">Pagado por el reasegurador</div></div>
+      <div class="kpi"><div class="v" id="kpiReasExcesoLimite">—</div><div class="l">Exceso sobre la capa (vuelve al cedente)</div></div>
+    </div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Fórmula de la capa XL</summary>
+      <div class="body">
+        <p><b>Pago del reasegurador:</b> <code>Pago_RA = min(max(X - Attachment, 0), Límite)</code></p>
+        <p><b>Retenido por el cedente:</b> <code>Retenido = X - Pago_RA</code></p>
+        <p><b>Nota del libro (Cap. 20):</b> solo las pérdidas por encima del "umbral de notificación" (reporting threshold) suelen comunicarse al reasegurador — esto implica que la severidad usada para tarificar la capa debe modelizarse como una <b>distribución truncada</b> (p.ej. Pareto o Pareto Generalizada) por encima de dicho umbral.</p>
+        <p><b>Tipos de base de póliza reaseguro:</b> LOD (losses occurring during), RAD (risk attaching during, desplaza ~6 meses la fecha media de ocurrencia) y "claims made".</p>
+      </div>
+    </details>
+  </div>
+  <div class="card">
+    <h3>Exposure Rating (Cap. 21) — cuando no hay suficiente experiencia propia</h3>
+    <p class="small">Cuando los datos del cliente no bastan para un modelo de severidad fiable, se usan <b>curvas de exposición</b> (exposure curves) de mercado, que son curvas de severidad "reingenierizadas" a partir de grandes bases de datos (p.ej. Lloyd's, Swiss Re). El libro advierte: su origen exacto a menudo es "misterioso" y no deben usarse dogmáticamente.</p>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> Limitación: con pocos datos de grandes pérdidas, la curva de exposición de mercado puede no reflejar bien el perfil específico del cliente.</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">El coste neto de reaseguro (prima cedida menos recuperaciones esperadas) alimenta el módulo <b>11 · Coste neto</b> y el <b>Puente de prima</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-costeneto" class="module">
+  <h1>11 · Coste neto (risk costing, ceded/retained)</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Sección 1.1.2</span>
+    <h3>Concepto</h3>
+    <p>Una vez aplicada la estructura de reaseguro/estructura de póliza, obtenemos las <b>pérdidas cedidas</b> (lo que paga el asegurador/reasegurador)
+    y las <b>pérdidas retenidas</b> (lo que queda en el asegurado o cedente). Este es el input real para calcular la prima técnica.</p>
+  </div>
+  <div class="card">
+    <h3>Ejemplo numérico (caso guía Cap. 1 — cuota compartida 95%)</h3>
+    <table>
+      <tr><th>Concepto</th><th>Valor</th><th>Tipo</th></tr>
+      <tr><td>Pérdidas brutas esperadas 2015</td><td>£2,077,286 (~£2.08M)</td><td><span class="badge resultado">Resultado</span></td></tr>
+      <tr><td>% cedido al asegurador (quota share)</td><td>95%</td><td><span class="badge dato">Dato del caso</span></td></tr>
+      <tr><td>Pérdidas cedidas esperadas</td><td>£1,973,422 (~£1.97M)</td><td><span class="badge resultado">Resultado</span></td></tr>
+    </table>
+    <p class="small">Nota: en este ejemplo simplificado del libro, el límite de £10M por siniestro y en agregado no afecta al cálculo porque las pérdidas observadas no se acercan a ese nivel.</p>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Esta cifra de pérdidas cedidas (£1.97M) es el punto de partida exacto del módulo <b>14 · Puente de prima</b>, reproduciendo el cálculo íntegro del libro.</p>
+  </div>
+</section>
+
+
+<section id="m-gastos" class="module">
+  <h1>12 · Gastos y consideraciones financieras</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Sección 19.1.1–19.1.2 y 1.1.3</span>
+    <h3>Concepto</h3>
+    <p>Sobre las pérdidas cedidas se cargan: <b>gastos</b> (de suscripción, gestión de siniestros, comisiones, reaseguro, overhead) y se descuenta
+    el <b>ingreso financiero</b> esperado por invertir la prima entre su cobro y el pago de siniestros (valor temporal del dinero).</p>
+  </div>
+  <div class="card">
+    <h3>Ejemplo numérico (caso guía Cap. 1)</h3>
+    <table>
+      <tr><th>Paso</th><th>Fórmula</th><th>Resultado</th></tr>
+      <tr><td>Carga de gastos (15% de la prima)</td><td><code>Pérdidas cedidas / (1-15%)</code></td><td>£1,973,422 / 0.85 ≈ £2.32M</td></tr>
+      <tr><td>Descuento por inversión (3% anual, 3 años de demora)</td><td><code>Importe / (1.03)^3</code></td><td>£2,321,673 / 1.03³ ≈ £2.12M</td></tr>
+    </table>
+    <p class="small"><span class="badge supuesto">Supuesto del caso</span> Demora media entre cobro de prima y pago combinado de siniestros+gastos: 3 años; retorno de inversión: 3% anual.</p>
+  </div>
+  <div class="alert ok"><span class="sem g"></span> El descuento por inversión refleja que cobrar hoy £2.12M permite disponer de £2.32M en 3 años al 3% de rendimiento — exactamente el importe necesario para pagar siniestros y gastos.</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Gastos e ingreso financiero son componentes editables del módulo <b>14 · Puente de prima</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-capital" class="module">
+  <h1>13 · Capital y beneficio objetivo</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Sección 19.2 "The Role of Capital Considerations in Pricing", Sección 1.1.3.3</span>
+    <h3>Concepto</h3>
+    <p>Toda aseguradora necesita <b>capital</b> para cumplir requisitos de solvencia regulatoria, y sus inversores exigen un <b>retorno sobre ese capital</b>.
+    El libro señala que el margen de beneficio objetivo (p.ej. 10%) <b>implícitamente</b> incorpora esta carga de capital, aunque en modelos más sofisticados
+    la carga de capital se calcula explícitamente desde la función de <i>capital modelling</i> de la compañía (p.ej. basada en un retorno objetivo sobre el capital en riesgo, RoRaC).</p>
+  </div>
+  <div class="card">
+    <h3>Ejemplo numérico (caso guía Cap. 1)</h3>
+    <table>
+      <tr><th>Paso</th><th>Fórmula</th><th>Resultado</th></tr>
+      <tr><td>Carga de beneficio (10%)</td><td><code>Importe tras gastos e inversión / (1-10%)</code></td><td>£2,124,659 / 0.9 ≈ £2.36M = <b>Prima técnica</b></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Fórmula combinada del libro (todo en un solo paso)</h3>
+    <p><code>Prima técnica = (Pérdidas cedidas / (1 - %gastos)) / (1+r_inv)^demora / (1 - %beneficio)</code></p>
+    <p>Sustituyendo: <code>£1,973,422 / 0.85 / 1.03³ / 0.9 ≈ £2.36M</code></p>
+    <p class="small"><b>Ratio de siniestralidad esperado (loss ratio):</b> <code>£1,973,422 / £2,360,733 ≈ 83.6%</code> — tal y como indica el libro.</p>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> Limitación: tratar capital y beneficio como un único "10% plano" simplifica mucho la realidad — en la práctica se calcula con modelos de capital (p.ej. basados en percentiles de la distribución agregada, Solvencia II / 1-in-200).</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Esta carga de capital/beneficio es el último escalón antes de la <b>Prima técnica</b> en el módulo <b>14 · Puente de prima</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-puente" class="module">
+  <h1>14 · Puente de prima — de coste a prima técnica (waterfall)</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Sección 19.1 "Cost Plus in Detail", Fig. 19.3</span>
+    <h3>Concepto</h3>
+    <p>Según el método <b>Cost Plus</b> (el más extendido, según el GRIP Working Party citado por el libro), la prima técnica se descompone en 5 componentes:</p>
+    <p><code>Prima técnica = Pérdidas esperadas + Margen de incertidumbre + Otros costes − Ingresos financieros + Beneficio</code></p>
+    <p class="small">Nota del libro: esta no es necesariamente una fórmula lineal exacta — ilustra los componentes y su signo, pero la fórmula real puede no ser una simple suma (ver Ec. 19.3 del libro).</p>
+  </div>
+
+  <div class="card">
+    <h3>🧪 Simulador: construye tu puente de prima (valores por defecto = caso del libro, Cap. 1)</h3>
+    <div class="grid cols-2">
+      <div>
+        <div class="slider-row"><label>Pérdidas cedidas esperadas (£)</label><input type="range" id="puenteLosses" min="500000" max="5000000" step="10000" value="1973422" oninput="calcPuente()"><span class="val" id="puenteLossesVal">£1,973,422</span></div>
+        <div class="slider-row"><label>Margen por incertidumbre (% sobre pérdidas)</label><input type="range" id="puenteUnc" min="0" max="50" step="1" value="0" oninput="calcPuente()"><span class="val" id="puenteUncVal">0%</span></div>
+        <div class="slider-row"><label>Gastos (% sobre prima)</label><input type="range" id="puenteGastos" min="0" max="40" step="1" value="15" oninput="calcPuente()"><span class="val" id="puenteGastosVal">15%</span></div>
+      </div>
+      <div>
+        <div class="slider-row"><label>Tasa de inversión anual</label><input type="range" id="puenteTasaInv" min="0" max="10" step="0.5" value="3" oninput="calcPuente()"><span class="val" id="puenteTasaInvVal">3.0%</span></div>
+        <div class="slider-row"><label>Demora media cobro-pago (años)</label><input type="range" id="puenteDemora" min="0" max="8" step="0.5" value="3" oninput="calcPuente()"><span class="val" id="puenteDemoraVal">3.0</span></div>
+        <div class="slider-row"><label>Margen de beneficio objetivo (% sobre prima)</label><input type="range" id="puenteBeneficio" min="0" max="40" step="1" value="10" oninput="calcPuente()"><span class="val" id="puenteBeneficioVal">10%</span></div>
+      </div>
+    </div>
+    <canvas id="chartPuente" height="130"></canvas>
+    <div class="grid cols-3">
+      <div class="kpi"><div class="v" id="kpiPuentePrimaTecnica">—</div><div class="l">Prima técnica final</div></div>
+      <div class="kpi"><div class="v" id="kpiPuenteLossRatio">—</div><div class="l">Loss ratio esperado</div></div>
+      <div class="kpi"><div class="v" id="kpiPuenteExpenseRatio">—</div><div class="l">Expense + profit ratio</div></div>
+    </div>
+    <div id="puenteAlertas"></div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Fórmula paso a paso con sustitución</summary>
+      <div class="body" id="puenteDetalle"></div>
+    </details>
+  </div>
+  <div class="card">
+    <h3>Las 5 metodologías de tarificación según el GRIP Report (Fig. 19.2 del libro)</h3>
+    <table>
+      <tr><th>Método</th><th>Cuándo se usa</th></tr>
+      <tr><td>Tarifa (Tariff)</td><td>El regulador fija o aprueba las tarifas (p.ej. riesgo de terremoto en Turquía)</td></tr>
+      <tr><td>Cualitativo</td><td>Datos escasos: se complementa el análisis estadístico con juicio experto</td></tr>
+      <tr><td><b>Cost Plus</b></td><td>El más usado en líneas comerciales y en reaseguro — base de este módulo</td></tr>
+      <tr><td>Distribución</td><td>Añade elementos no-coste: propensión del cliente a comparar precios, canal de distribución</td></tr>
+      <tr><td>Industrial</td><td>Foco en eficiencia operativa y economías de escala (líneas personales masivas)</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">La prima técnica resultante es el input directo del módulo <b>15 · Prima comercial</b> y del <b>Tornado de sensibilidad</b>.</p>
+  </div>
+</section>
+
+
+<section id="m-comercial" class="module">
+  <h1>15 · Consideraciones comerciales y prima final</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Sección 19.3–19.4, Sección 1.1.4</span>
+    <h3>Concepto</h3>
+    <p>La prima técnica <b>no es necesariamente la prima cobrada</b>. El suscriptor puede desviarse por razones comerciales: retener negocio,
+    captar nuevos clientes, señalizar descontento con un riesgo, o por presión del <b>ciclo de suscripción</b> (underwriting cycle) y la competencia del mercado.</p>
+  </div>
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>Razones para bajar el precio</h3>
+      <ul class="small">
+        <li>Retener cliente existente</li>
+        <li>Captar nueva cuenta estratégica</li>
+        <li>Mercado "blando" (soft market) con exceso de capacidad</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Razones para subir el precio</h3>
+      <ul class="small">
+        <li>Señalizar descontento con el riesgo o su siniestralidad</li>
+        <li>Mercado "duro" (hard market) tras grandes pérdidas sectoriales</li>
+        <li>Necesidad de cumplir el retorno de capital objetivo de la cartera</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Price optimisation (líneas personales)</h3>
+    <p class="small">En líneas personales con gran volumen de clientes, los actuarios participan cada vez más en la <b>optimización de precios</b>:
+    ajustar el precio no solo al coste de riesgo sino a la elasticidad de demanda / propensión a comparar precios de cada segmento de cliente.</p>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> El libro advierte: el actuario de pricing debe seguir monitorizando continuamente costes, ventas y posición competitiva, no es una decisión de "una sola vez".</div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Usa el deslizador de ajuste comercial en el módulo <b>★ Caso integral</b> para ver cómo la prima final se desvía de la técnica.</p>
+  </div>
+</section>
+
+
+<section id="m-monitor" class="module">
+  <h1>16 · Monitorización y control (vuelta al ciclo)</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Secciones 19.3–19.4 (seguimiento continuo), Cap. 5 "Pricing in Context"</span>
+    <h3>Concepto</h3>
+    <p>El pricing no termina al cobrar la prima: hay que <b>monitorizar</b> continuamente el loss ratio real, compararlo con el esperado,
+    vigilar el ciclo de mercado y realimentar los supuestos para la siguiente renovación. Esto cierra el ciclo del proceso de pricing (↺).</p>
+  </div>
+  <div class="card">
+    <h3>🚦 Panel de semáforos de control (ejemplo ilustrativo)</h3>
+    <div class="grid cols-3">
+      <div class="card"><span class="sem g"></span><b>Loss ratio real vs. esperado</b><p class="small">83.6% esperado vs. 85% observado → desviación &lt;5pp: <span style="color:var(--ok);">OK</span></p></div>
+      <div class="card"><span class="sem a"></span><b>Frecuencia de grandes siniestros</b><p class="small">2 siniestros &gt;£1M en el año vs. 1 esperado → vigilar tendencia</p></div>
+      <div class="card"><span class="sem r"></span><b>Ratio gastos+beneficio/prima</b><p class="small">Si gastos+beneficio superan el 100% de la prima → ALERTA de inconsistencia (ver validaciones del Puente de prima)</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Checklist de monitorización recomendada</h3>
+    <ul class="small">
+      <li>Actualizar triángulos de IBNR/IBNER con la nueva información de desarrollo.</li>
+      <li>Revisar si la inflación de siniestros asumida sigue siendo razonable.</li>
+      <li>Comparar frecuencia y severidad reales vs. modelizadas (back-testing).</li>
+      <li>Revisar el posicionamiento competitivo (tasa de retención, tasa de conversión de nuevos negocios).</li>
+      <li>Reevaluar la estructura de reaseguro si el perfil de grandes pérdidas ha cambiado.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>↺ Vuelta al proceso</h3>
+    <button class="primary" onclick="irModulo('m-proceso')">Volver al mapa del proceso</button>
+    <button class="ghost" onclick="irModulo('m-riesgo')">Reiniciar el ciclo desde "Conocimiento del riesgo"</button>
+  </div>
+</section>
+
+
+<section id="m-credibilidad" class="module">
+  <h1>★ Credibilidad (Bühlmann)</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Cap. 25 "Credibility Theory"</span>
+    <h3>Concepto</h3>
+    <p>La <b>prima de credibilidad</b> combina la experiencia propia del cliente con la experiencia de mercado, ponderando según cuánto podemos
+    "confiar" en los datos propios:</p>
+    <p><code>Prima_credibilidad = Z × Prima_cliente + (1-Z) × Prima_mercado</code> (Ec. 25.1 adaptada del libro: φ̂ = Z×φ̂_c + (1-Z)×φ_m)</p>
+  </div>
+  <div class="card">
+    <h3>Ejemplo del libro: el pueblo de Crickhollow</h3>
+    <p class="small">El libro ilustra la credibilidad con un ejemplo no asegurador: una encuesta de 30 salarios en un pueblo (Crickhollow) da una media
+    muestral de £55,000, mientras que la media nacional (megasurvey) es de £30,200. ¿Qué número usar? La respuesta: ni uno ni otro, sino una combinación ponderada por Z.</p>
+  </div>
+  <div class="card">
+    <h3>🧪 Laboratorio: factor de credibilidad de Bühlmann</h3>
+    <div class="slider-row"><label>n (años/pólizas de experiencia propia)</label><input type="range" id="credN" min="1" max="50" step="1" value="30" oninput="calcCredibilidad()"><span class="val" id="credNVal">30</span></div>
+    <div class="slider-row"><label>k (parámetro de Bühlmann: Var. proceso / Var. entre riesgos)</label><input type="range" id="credK" min="1" max="100" step="1" value="20" oninput="calcCredibilidad()"><span class="val" id="credKVal">20</span></div>
+    <div class="slider-row"><label>Prima/estimación del cliente (£)</label><input type="range" id="credClient" min="0" max="200000" step="1000" value="55000" oninput="calcCredibilidad()"><span class="val" id="credClientVal">£55,000</span></div>
+    <div class="slider-row"><label>Prima/estimación de mercado (£)</label><input type="range" id="credMarket" min="0" max="200000" step="1000" value="30200" oninput="calcCredibilidad()"><span class="val" id="credMarketVal">£30,200</span></div>
+    <div class="grid cols-3">
+      <div class="kpi"><div class="v" id="kpiCredZ">—</div><div class="l">Factor de credibilidad Z</div></div>
+      <div class="kpi"><div class="v" id="kpiCredPrima">—</div><div class="l">Prima de credibilidad resultante</div></div>
+      <div class="kpi"><div class="v" id="kpiCredInterpretacion">—</div><div class="l">Lectura</div></div>
+    </div>
+    <details class="calc">
+      <summary>¿Cómo se calcula? Fórmula de Bühlmann</summary>
+      <div class="body">
+        <p><b>Fórmula de credibilidad de Bühlmann:</b> <code>Z = n / (n + k)</code>, donde k = Varianza de proceso (dentro del riesgo) / Varianza entre riesgos (heterogeneidad del mercado).</p>
+        <p><b>Interpretación:</b> cuanto mayor es n (más experiencia propia) o menor es k (menos "ruido" interno respecto a la heterogeneidad de mercado), más cerca está Z de 1 → más peso a la experiencia propia.</p>
+        <p><b>Limitación:</b> estimar k requiere datos de la varianza entre riesgos del mercado, que no siempre están disponibles con precisión.</p>
+      </div>
+    </details>
+  </div>
+  <div class="card">
+    <h3>Aplicación directa: catástrofes (Cap. 24)</h3>
+    <p class="small">El libro señala que para riesgos de catástrofe, la experiencia del cliente tiene <b>credibilidad casi nula</b> (Z≈0): se recurre a modelos de catástrofe
+    basados en bases de datos de eventos históricos no específicos del cliente y en comprensión científica de fenómenos (huracanes, terremotos), no en la experiencia propia.</p>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Esta técnica conecta con <b>5 · Frecuencia</b> y <b>6 · Severidad</b> cuando los datos propios del cliente son escasos.</p>
+  </div>
+</section>
+
+
+<section id="m-sensibilidad" class="module">
+  <h1>★ Análisis de sensibilidad (tornado y escenarios)</h1>
+  <div class="card accent-left">
+    <span class="badge amp">Ampliación didáctica</span>
+    <p class="small">El libro no presenta un "gráfico tornado" formal con ese nombre, pero sí insiste repetidamente en la importancia de entender
+    qué variables mueven más el resultado (p.ej. al hablar de incertidumbre de parámetro, Cap. 18, y de los componentes del puente de prima, Cap. 19).
+    Este módulo traduce esa idea a una herramienta visual estándar de la práctica actuarial.</p>
+  </div>
+  <div class="card">
+    <h3>🧪 Tornado: impacto de cada variable sobre la Prima Técnica</h3>
+    <p class="small">Cada barra muestra cuánto cambia la prima técnica (caso base = valores del Puente de Prima) si la variable se mueve ±20% respecto a su valor base.</p>
+    <canvas id="chartTornado" height="160"></canvas>
+    <button class="ghost" onclick="calcTornado()">🔄 Recalcular con los valores actuales del Puente de Prima</button>
+  </div>
+  <div class="card">
+    <h3>Escenarios predefinidos</h3>
+    <div class="slider-row">
+      <label>Escenario</label>
+      <select id="selEscenario" onchange="aplicarEscenario()">
+        <option value="base">Base (valores del libro, Cap. 1)</option>
+        <option value="optimista">Optimista (menor inflación, menor incertidumbre)</option>
+        <option value="estres">Estrés (alta inflación de siniestros + grandes pérdidas)</option>
+        <option value="hard">Mercado "hard" (sube margen, baja competencia)</option>
+      </select>
+    </div>
+    <div id="escenarioResultado" class="grid cols-3"></div>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Usa este módulo tras ajustar el <b>14 · Puente de prima</b> para ver qué palanca pesa más en tu caso concreto.</p>
+  </div>
+</section>
+
+
+<section id="m-arboles" class="module">
+  <h1>★ Árboles de decisión</h1>
+  <div class="card accent-left">
+    <span class="badge amp">Ampliación didáctica (estructura) + <span class="badge libro">contenido del libro</span></span>
+    <p class="small">Estos árboles organizan de forma visual las decisiones que el libro describe de forma narrativa en distintos capítulos. Haz clic en cada nodo para desplegar su detalle.</p>
+  </div>
+
+  <div class="card">
+    <h3>🌳 Árbol maestro del proceso de pricing</h3>
+    <div id="arbolMaestro"></div>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>🌳 Árbol: elección del modelo de frecuencia</h3>
+      <div id="arbolFrecuencia"></div>
+    </div>
+    <div class="card">
+      <h3>🌳 Árbol: elección del modelo de severidad</h3>
+      <div id="arbolSeveridad"></div>
+    </div>
+  </div>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h3>🌳 Árbol: tratamiento de grandes siniestros</h3>
+      <div id="arbolGrandes"></div>
+    </div>
+    <div class="card">
+      <h3>🌳 Árbol: de técnica a comercial</h3>
+      <div id="arbolTecnicaComercial"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>En el dashboard</h3>
+    <p class="small">Cada nodo incluye: significado, uso, datos necesarios, método/fórmula, resultado esperado y limitaciones — con referencia al capítulo del libro cuando existe.</p>
+  </div>
+</section>
+
+
+<section id="m-caso" class="module">
+  <h1>★ Caso práctico integral trazable</h1>
+  <div class="card accent-left">
+    <span class="badge libro">Libro: Capítulo 1 "Pricing Process: A Gentle Start" + Capítulo 11 "Burning Cost Analysis"</span>
+    <h3>Contexto del caso (dato del libro)</h3>
+    <p>Eres el suscriptor de una póliza de <b>Employers' Liability</b> (responsabilidad patronal). Tienes 10 años de pérdidas agregadas históricas
+    (2005–2014) y debes fijar la prima para el año de póliza 2015. La estructura: <b>95% de cuota compartida</b> (quota share) con límite de £10M
+    por siniestro y en agregado.</p>
+  </div>
+
+  <div class="card">
+    <h3>🧭 Recorrido completo paso a paso (todas las cifras cuadran con el libro)</h3>
+    <div class="flow-step current" onclick="toggleCasoPaso(1)"><div class="n">1</div> Datos brutos (tabla 2005–2014)</div>
+    <div id="casoPaso1" class="tree-detail show">
+      Media simple bruta 2005–2014 = <b>£1,297,392</b>. <span class="badge resultado">Resultado</span> — pero el libro advierte: 4 de los últimos 5 años superan esta media, "algo no va bien".
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(2)"><div class="n">2</div> Excluir 2014 (IBNR simplificado)</div>
+    <div id="casoPaso2" class="tree-detail">
+      Media 2005–2013 = <b>£1,347,885</b>. <span class="badge supuesto">Supuesto: 2014 inmaduro, se excluye en vez de hacer IBNR completo.</span>
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(3)"><div class="n">3</div> Revalorizar por inflación de siniestros (5% anual)</div>
+    <div id="casoPaso3" class="tree-detail">
+      Media revalorizada 2005–2013 = <b>£1,766,528</b>. Fórmula: <code>X(t)×(1.05)^(2015-t)</code>.
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(4)"><div class="n">4</div> Ajustar por cambios de exposición (wageroll, inflación salarial 4%)</div>
+    <div id="casoPaso4" class="tree-detail">
+      Media final ajustada 2005–2013 = <b>£2,077,286 (~£2.08M)</b> = <span class="badge resultado">Pérdidas brutas esperadas 2015</span>.
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(5)"><div class="n">5</div> Aplicar estructura de reaseguro / cesión (95% quota share)</div>
+    <div id="casoPaso5" class="tree-detail">
+      Pérdidas cedidas = 95% × £2,077,286 = <b>£1,973,422 (~£1.97M)</b>.
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(6)"><div class="n">6</div> Cargar gastos (15% de la prima)</div>
+    <div id="casoPaso6" class="tree-detail">
+      £1,973,422 / (1-0.15) = <b>£2,321,673 (~£2.32M)</b>.
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(7)"><div class="n">7</div> Descontar por ingreso de inversión (3% anual, demora 3 años)</div>
+    <div id="casoPaso7" class="tree-detail">
+      £2,321,673 / (1.03)³ = <b>£2,124,659 (~£2.12M)</b>.
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(8)"><div class="n">8</div> Cargar beneficio objetivo (10%)</div>
+    <div id="casoPaso8" class="tree-detail">
+      £2,124,659 / (1-0.10) = <b><span style="color:var(--accent);">£2,360,733 ≈ £2.36M = PRIMA TÉCNICA</span></b>
+    </div>
+
+    <div class="flow-step" onclick="toggleCasoPaso(9)"><div class="n">9</div> Loss ratio esperado</div>
+    <div id="casoPaso9" class="tree-detail">
+      £1,973,422 / £2,360,733 = <b>83.6%</b> — consistente con la cita textual del libro.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔗 Enlaza con el resto del dashboard</h3>
+    <div class="tag-row">
+      <button class="ghost" onclick="irModulo('m-puente')">Abrir en Puente de Prima (editable)</button>
+      <button class="ghost" onclick="irModulo('m-datos')">Ver tabla de datos original</button>
+      <button class="ghost" onclick="irModulo('m-prep')">Ver laboratorio de preparación de datos</button>
+    </div>
+  </div>
+  <div class="alert warn"><span class="sem a"></span> Limitaciones explícitas del propio libro sobre este caso: se basa en datos <b>agregados por año</b> (no individuales), por lo que no permite separar frecuencia/severidad ni analizar el efecto de cambiar el deducible — el libro usa este ejemplo solo como "arranque suave" antes de introducir el modelo frecuencia/severidad (Cap. 6 en adelante) y el burning cost con datos individuales (Cap. 11).</div>
+</section>
+
+
+<section id="m-glosario" class="module">
+  <h1>📖 Glosario ES/EN</h1>
+  <div class="card">
+    <input type="text" id="glosarioBuscar" placeholder="Buscar término (ES o EN)..." oninput="filtrarGlosario()">
+  </div>
+  <div class="card" id="glosarioLista">
+    <div class="glossary-item"><b>Burning cost</b> <span class="small">(Burning cost)</span> — Técnica tradicional que estima la pérdida esperada promediando la experiencia histórica ajustada (inflación, exposición, IBNR), sin modelización estocástica explícita. <span class="badge libro">Cap. 11</span></div>
+<div class="glossary-item"><b>IBNR</b> <span class="small">(IBNR (Incurred But Not Reported))</span> — Siniestros ya ocurridos pero todavía no notificados al asegurador. <span class="badge libro">Cap. 13</span></div>
+<div class="glossary-item"><b>IBNER</b> <span class="small">(IBNER (Incurred But Not Enough Reserved))</span> — Error en la reserva de un siniestro abierto: el importe reservado no refleja aún el coste final esperado. <span class="badge libro">Cap. 15</span></div>
+<div class="glossary-item"><b>Frecuencia</b> <span class="small">(Frequency)</span> — Número de siniestros ocurridos en un periodo determinado; se modela con distribuciones de conteo (Poisson, Binomial, Binomial Negativa). <span class="badge libro">Cap. 14</span></div>
+<div class="glossary-item"><b>Severidad</b> <span class="small">(Severity)</span> — Importe individual de un siniestro; se modela con distribuciones continuas (Lognormal, Pareto, Gamma, etc.). <span class="badge libro">Cap. 16</span></div>
+<div class="glossary-item"><b>Pérdida agregada (S)</b> <span class="small">(Aggregate loss)</span> — Suma de todos los importes de siniestro en un periodo: S = X1+...+XN, donde N es la frecuencia. <span class="badge libro">Cap. 6, 17</span></div>
+<div class="glossary-item"><b>Modelo de riesgo colectivo</b> <span class="small">(Collective risk model)</span> — Modelo agregado donde N (frecuencia) y los Xi (severidad) se modelan por separado y luego se combinan. <span class="badge libro">Cap. 6</span></div>
+<div class="glossary-item"><b>Modelo de riesgo individual</b> <span class="small">(Individual risk model)</span> — Modelo agregado donde cada uno de n riesgos tiene una probabilidad pi de sufrir pérdida. <span class="badge libro">Cap. 6</span></div>
+<div class="glossary-item"><b>Prima técnica</b> <span class="small">(Technical premium)</span> — Prima calculada sobre bases puramente técnicas (coste + cargas), sin considerar presión comercial. <span class="badge libro">Cap. 19</span></div>
+<div class="glossary-item"><b>Prima comercial</b> <span class="small">(Commercial premium)</span> — Prima finalmente cobrada, que puede desviarse de la técnica por razones de mercado/competencia. <span class="badge libro">Cap. 19</span></div>
+<div class="glossary-item"><b>Cost Plus</b> <span class="small">(Cost Plus)</span> — Metodología de tarificación: Prima = Pérdidas esperadas + cargas (incertidumbre, gastos, capital/beneficio) − ingreso financiero. <span class="badge libro">Cap. 19</span></div>
+<div class="glossary-item"><b>Exceso de pérdida (XL)</b> <span class="small">(Excess of Loss)</span> — Estructura de reaseguro no proporcional donde el reasegurador paga la parte del siniestro entre un punto de ataque y un límite. <span class="badge libro">Cap. 20</span></div>
+<div class="glossary-item"><b>LOD</b> <span class="small">(Losses Occurring During)</span> — Base de póliza de reaseguro que cubre todas las pérdidas ocurridas durante el periodo, sea cual sea la fecha de la póliza original. <span class="badge libro">Cap. 20</span></div>
+<div class="glossary-item"><b>RAD</b> <span class="small">(Risk Attaching During)</span> — Base de póliza de reaseguro que cubre pólizas incepcionadas durante el periodo, sin importar cuándo ocurra el siniestro. <span class="badge libro">Cap. 20</span></div>
+<div class="glossary-item"><b>Exposure rating</b> <span class="small">(Exposure rating)</span> — Método de tarificación basado en curvas de exposición de mercado cuando no hay suficientes datos propios. <span class="badge libro">Cap. 21</span></div>
+<div class="glossary-item"><b>Credibilidad</b> <span class="small">(Credibility)</span> — Técnica para combinar la experiencia propia del asegurado con la del mercado, ponderada por un factor Z. <span class="badge libro">Cap. 25</span></div>
+<div class="glossary-item"><b>Factor de Bühlmann (Z)</b> <span class="small">(Bühlmann credibility factor)</span> — Z = n/(n+k): peso dado a la experiencia propia frente a la de mercado. <span class="badge libro">Cap. 25</span></div>
+<div class="glossary-item"><b>Deducible / EEL</b> <span class="small">(Deductible / Each-and-Every-Loss)</span> — Importe retenido por el asegurado en cada siniestro antes de que el asegurador pague. <span class="badge libro">Cap. 11</span></div>
+<div class="glossary-item"><b>AAD</b> <span class="small">(Annual Aggregate Deductible)</span> — Deducible agregado anual: retención del asegurado antes de que el asegurador pague en el conjunto del año. <span class="badge libro">Cap. 11</span></div>
+<div class="glossary-item"><b>Modelo catastrófico</b> <span class="small">(Catastrophe model)</span> — Modelo que no usa la experiencia del cliente (credibilidad ~0) sino bases de eventos históricos y comprensión científica del fenómeno. <span class="badge libro">Cap. 24</span></div>
+<div class="glossary-item"><b>GLM</b> <span class="small">(Generalised Linear Model)</span> — Modelo estadístico usado para la selección de factores de tarificación en líneas personales/comerciales. <span class="badge libro">Cap. 26</span></div>
+<div class="glossary-item"><b>Loss ratio</b> <span class="small">(Loss ratio)</span> — Ratio entre siniestros incurridos (antes de gastos) y la prima: Pérdidas cedidas / Prima. <span class="badge libro">Cap. 1</span></div>
+<div class="glossary-item"><b>Claims inflation</b> <span class="small">(Claims inflation)</span> — Inflación específica de siniestros, distinta del IPC/CPI general; depende de factores como coste de reparación o inflación salarial/judicial. <span class="badge libro">Cap. 1, 9</span></div>
+<div class="glossary-item"><b>Chain ladder</b> <span class="small">(Chain ladder)</span> — Método de desarrollo de triángulos para estimar IBNR, basado en factores de desarrollo acumulados. <span class="badge libro">Cap. 13</span></div>
+<div class="glossary-item"><b>Curva ILF</b> <span class="small">(Increased Limit Factor curve)</span> — Curva que relaciona la prima/pérdida esperada a distintos límites de cobertura, usada en tarificación de responsabilidad civil. <span class="badge libro">Cap. 22</span></div>
+
+  </div>
+</section>
+
+
+<section id="m-quiz" class="module">
+  <h1>✓ Autoevaluación</h1>
+  <div class="card">
+    <p class="small">Responde las preguntas para comprobar tu comprensión. Las respuestas correctas se marcarán en verde y las incorrectas en rojo, con explicación.</p>
+    <div class="kpi" style="display:inline-block;"><div class="v" id="quizScore">0 / 8</div><div class="l">Puntuación actual</div></div>
+  </div>
+  <div class="card">
+    
+    <div class="quiz-q" id="quizQ0">
+      <p><b>P1.</b> Según el libro, ¿qué distribuciones de conteo pertenecen a la clase Panjer (a,b,0)?</p>
+      <button class="quiz-opt" onclick="responderQuiz(0,0)">Poisson, Binomial, Binomial Negativa</button>
+<button class="quiz-opt" onclick="responderQuiz(0,1)">Lognormal, Pareto, Gamma</button>
+<button class="quiz-opt" onclick="responderQuiz(0,2)">Normal, Exponencial, Weibull</button>
+<button class="quiz-opt" onclick="responderQuiz(0,3)">Solo la Poisson</button>
+
+      <div class="small" id="quizExp0" style="display:none; margin-top:8px; color:var(--accent2);">💡 Las tres son las únicas distribuciones de la clase Panjer (Ec. 14.1), caracterizada por p_k/p_(k-1)=a+b/k (Cap. 14).</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ1">
+      <p><b>P2.</b> En el ejemplo de Employers' Liability del Capítulo 1, ¿cuál es la prima técnica final aproximada?</p>
+      <button class="quiz-opt" onclick="responderQuiz(1,0)">£1.30M</button>
+<button class="quiz-opt" onclick="responderQuiz(1,1)">£1.97M</button>
+<button class="quiz-opt" onclick="responderQuiz(1,2)">£2.08M</button>
+<button class="quiz-opt" onclick="responderQuiz(1,3)">£2.36M</button>
+
+      <div class="small" id="quizExp1" style="display:none; margin-top:8px; color:var(--accent2);">💡 Tras cargar gastos (15%), descontar inversión (3%/3 años) y cargar beneficio (10%) sobre las pérdidas cedidas (£1.97M), la prima técnica es ≈£2.36M.</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ2">
+      <p><b>P3.</b> ¿Qué significa IBNER?</p>
+      <button class="quiz-opt" onclick="responderQuiz(2,0)">Incurred But Not Enough Reserved</button>
+<button class="quiz-opt" onclick="responderQuiz(2,1)">Incurred But Never Reported</button>
+<button class="quiz-opt" onclick="responderQuiz(2,2)">Insured But Not Eligible for Reinsurance</button>
+<button class="quiz-opt" onclick="responderQuiz(2,3)">Income Before Net Expenses Ratio</button>
+
+      <div class="small" id="quizExp2" style="display:none; margin-top:8px; color:var(--accent2);">💡 IBNER = Incurred But Not Enough Reserved: error de reserva en siniestros abiertos (Cap. 15).</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ3">
+      <p><b>P4.</b> En una capa de reaseguro 'L xs A' (p.ej. £3M xs £2M), ¿qué paga el reasegurador para un siniestro de £4M?</p>
+      <button class="quiz-opt" onclick="responderQuiz(3,0)">£4M completo</button>
+<button class="quiz-opt" onclick="responderQuiz(3,1)">£2M (el límite siempre)</button>
+<button class="quiz-opt" onclick="responderQuiz(3,2)">£2M (4M-2M de ataque, topado por el límite de 3M)</button>
+<button class="quiz-opt" onclick="responderQuiz(3,3)">Nada, está por debajo del umbral</button>
+
+      <div class="small" id="quizExp3" style="display:none; margin-top:8px; color:var(--accent2);">💡 Pago = min(max(4M-2M,0), 3M) = min(2M,3M) = £2M.</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ4">
+      <p><b>P5.</b> Según Bühlmann, si Z = n/(n+k), ¿qué ocurre si n (experiencia propia) crece mucho?</p>
+      <button class="quiz-opt" onclick="responderQuiz(4,0)">Z tiende a 0</button>
+<button class="quiz-opt" onclick="responderQuiz(4,1)">Z tiende a 1 (más peso a la experiencia propia)</button>
+<button class="quiz-opt" onclick="responderQuiz(4,2)">Z es siempre 0.5</button>
+<button class="quiz-opt" onclick="responderQuiz(4,3)">Z no depende de n</button>
+
+      <div class="small" id="quizExp4" style="display:none; margin-top:8px; color:var(--accent2);">💡 A mayor n, más confiamos en la experiencia propia del cliente, por lo que Z se acerca a 1 (Cap. 25).</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ5">
+      <p><b>P6.</b> ¿Por qué los modelos de catástrofe NO usan la experiencia histórica del cliente como input principal?</p>
+      <button class="quiz-opt" onclick="responderQuiz(5,0)">Porque es ilegal</button>
+<button class="quiz-opt" onclick="responderQuiz(5,1)">Porque la credibilidad de esa experiencia es casi nula (eventos muy raros)</button>
+<button class="quiz-opt" onclick="responderQuiz(5,2)">Porque es más caro</button>
+<button class="quiz-opt" onclick="responderQuiz(5,3)">Porque el libro lo prohíbe explícitamente</button>
+
+      <div class="small" id="quizExp5" style="display:none; margin-top:8px; color:var(--accent2);">💡 Las catástrofes son tan raras a nivel de cliente individual que su experiencia tiene credibilidad cercana a cero (Cap. 24, en el lenguaje del Cap. 25).</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ6">
+      <p><b>P7.</b> ¿Cuál de estas NO es una de las 5 metodologías de tarificación del GRIP Report citadas en el libro?</p>
+      <button class="quiz-opt" onclick="responderQuiz(6,0)">Tariff</button>
+<button class="quiz-opt" onclick="responderQuiz(6,1)">Cost Plus</button>
+<button class="quiz-opt" onclick="responderQuiz(6,2)">Distribución</button>
+<button class="quiz-opt" onclick="responderQuiz(6,3)">Machine Learning puro</button>
+
+      <div class="small" id="quizExp6" style="display:none; margin-top:8px; color:var(--accent2);">💡 Las 5 son: Tariff, Qualitative, Cost Plus, Distribution, Industrial (Fig. 19.2). 'Machine Learning puro' no es una de ellas en el libro.</div>
+    </div>
+    
+    <div class="quiz-q" id="quizQ7">
+      <p><b>P8.</b> En el modelo de riesgo colectivo, S = X1+...+XN. ¿Qué fórmula da la media teórica de S?</p>
+      <button class="quiz-opt" onclick="responderQuiz(7,0)">E[S] = E[N] + E[X]</button>
+<button class="quiz-opt" onclick="responderQuiz(7,1)">E[S] = E[N] × E[X]</button>
+<button class="quiz-opt" onclick="responderQuiz(7,2)">E[S] = Var[N] × Var[X]</button>
+<button class="quiz-opt" onclick="responderQuiz(7,3)">E[S] = max(N,X)</button>
+
+      <div class="small" id="quizExp7" style="display:none; margin-top:8px; color:var(--accent2);">💡 La media de la pérdida agregada es el producto de la media de frecuencia por la media de severidad (Cap. 17).</div>
+    </div>
+    
+  </div>
+</section>
+
+
+<section id="m-fuentes" class="module">
+  <h1>🔗 Fuentes</h1>
+  <div class="card accent-left">
+    <h3>Fuente principal (obligatoria)</h3>
+    <p><b>Parodi, Pietro.</b> <i>Pricing in General Insurance.</i> CRC Press / Chapman &amp; Hall, Institute and Faculty of Actuaries series.</p>
+    <table>
+      <tr><th>Capítulo</th><th>Título</th></tr>
+      <tr><td>1</td><td>Pricing Process: A Gentle Start</td></tr>
+      <tr><td>2</td><td>Insurance and Reinsurance Products</td></tr>
+      <tr><td>3</td><td>The Policy Structure</td></tr>
+      <tr><td>4</td><td>The Insurance Markets</td></tr>
+      <tr><td>5</td><td>Pricing in Context</td></tr>
+      <tr><td>6</td><td>The Scientific Basis for Pricing: Risk Loss Models and the Frequency/Severity Risk Costing Process</td></tr>
+      <tr><td>7</td><td>Familiarise Yourself with the Risk</td></tr>
+      <tr><td>8</td><td>Data Requirements for Pricing</td></tr>
+      <tr><td>9</td><td>Setting the Claims Inflation Assumptions</td></tr>
+      <tr><td>10</td><td>Data Preparation</td></tr>
+      <tr><td>11</td><td>Burning Cost Analysis</td></tr>
+      <tr><td>12</td><td>What Is This Thing Called Modelling?</td></tr>
+      <tr><td>13</td><td>Frequency Modelling: Adjusting for Claim Count IBNR</td></tr>
+      <tr><td>14</td><td>Frequency Modelling: Selecting and Calibrating a Frequency Model</td></tr>
+      <tr><td>15</td><td>Severity Modelling: Adjusting for IBNER and Other Factors</td></tr>
+      <tr><td>16</td><td>Severity Modelling: Selecting and Calibrating a Severity Model</td></tr>
+      <tr><td>17</td><td>Aggregate Loss Modelling</td></tr>
+      <tr><td>18</td><td>Identifying, Measuring and Communicating Uncertainty</td></tr>
+      <tr><td>19</td><td>From Costing to Pricing</td></tr>
+      <tr><td>20</td><td>Experience Rating for Non-Proportional Reinsurance</td></tr>
+      <tr><td>21</td><td>Exposure Rating for Property</td></tr>
+      <tr><td>22</td><td>Liability Rating Using Increased Limit Factor Curves</td></tr>
+      <tr><td>23</td><td>Pricing Considerations for Specific Lines of Business</td></tr>
+      <tr><td>24</td><td>Catastrophe Modelling</td></tr>
+      <tr><td>25</td><td>Credibility Theory</td></tr>
+      <tr><td>26</td><td>Rating Factor Selection and Generalised Linear Modelling</td></tr>
+      <tr><td>27</td><td>Multilevel Factors and Smoothing</td></tr>
+      <tr><td>28</td><td>Pricing Multiple Lines of Business and Risks</td></tr>
+      <tr><td>29</td><td>Insurance Structure Optimisation</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Ampliación didáctica utilizada en este dashboard</h3>
+    <ul class="small">
+      <li>Estructura visual de árboles de decisión y gráfico tornado (herramientas estándar de la práctica actuarial, no nombradas explícitamente así en el libro).</li>
+      <li>Simulación Monte Carlo didáctica implementada en JavaScript puro (el libro describe el método en el Cap. 17, pero no provee código).</li>
+    </ul>
+    <p class="small">Toda ampliación está señalada con la etiqueta <span class="badge amp">Ampliación didáctica</span> y nunca se atribuye al autor.</p>
+  </div>
+  <div class="card">
+    <h3>Nota de trazabilidad</h3>
+    <p class="small">Los resultados numéricos clave de este dashboard (caso Employers' Liability: £1.30M → £1.35M → £1.77M → £2.08M → £1.97M → £2.32M → £2.12M → £2.36M, loss ratio 83.6%) corresponden exactamente a los cálculos presentados en el Capítulo 1 del libro, verificados por extracción directa del texto original.</p>
+  </div>
+</section>
+
+
+</main>
+</div>
+<footer class="app-footer">
+  Dashboard de Pricing en Seguros Generales · Basado en Pietro Parodi, <i>"Pricing in General Insurance"</i> (CRC Press) ·
+  Generado como herramienta educativa interactiva · Las cifras del caso práctico integral provienen directamente del Capítulo 1 y Capítulo 11 del libro.
+</footer>
+</div>
+
+
+<div id="modalDiagnostico" class="modal-overlay" style="display:none;" onclick="if(event.target===this) cerrarModal('modalDiagnostico');">
+  <div class="modal-box" onclick="event.stopPropagation();">
+    <button class="ghost" style="float:right; padding:4px 10px;" onclick="cerrarModal('modalDiagnostico')">✕</button>
+    <h2>🧭 Diagnóstico inicial</h2>
+    <p>¿Cómo quieres recorrer el contenido?</p>
+    <div class="diag-opts">
+      <button class="diag-btn" onclick="setRutaDiagnostico('guiada')"><b>A ·</b> Ruta guiada completa (de datos a prima comercial, paso a paso)</button>
+      <button class="diag-btn" onclick="setRutaDiagnostico('concepto')"><b>B ·</b> Quiero entender un concepto concreto</button>
+      <button class="diag-btn" onclick="setRutaDiagnostico('caso')"><b>C ·</b> Quiero resolver un caso práctico completo</button>
+      <button class="diag-btn" onclick="setRutaDiagnostico('linea')"><b>D ·</b> Quiero ver una línea de negocio específica</button>
+      <button class="diag-btn" onclick="setRutaDiagnostico('reaseguro')"><b>E ·</b> Me interesa especialmente el reaseguro</button>
+      <button class="diag-btn" onclick="setRutaDiagnostico('repaso')"><b>F ·</b> Ya tengo base: repaso avanzado / técnico</button>
+      <button class="diag-btn" onclick="setRutaDiagnostico('explorar')"><b>G ·</b> Prefiero explorar el dashboard libremente</button>
+    </div>
+    <p style="margin-top:14px;">¿Qué nivel tienes?</p>
+    <div class="diag-opts-row">
+      <button class="diag-btn-sm" onclick="setNivelDiagnostico('inicial')">Inicial</button>
+      <button class="diag-btn-sm" onclick="setNivelDiagnostico('intermedio')">Intermedio</button>
+      <button class="diag-btn-sm" onclick="setNivelDiagnostico('avanzado')">Avanzado</button>
+      <button class="diag-btn-sm" onclick="setNivelDiagnostico('experto')">Experto</button>
+    </div>
+    <div class="small" style="margin-top:12px;">Por defecto: ruta guiada completa, nivel intermedio, ejemplo de RC (Employers' Liability), en euros, con exposición anual. Puedes cambiarlo en cualquier momento desde la cabecera.</div>
+    <button class="primary" style="margin-top:16px;" onclick="cerrarModal('modalDiagnostico')">Empezar ✅</button>
+  </div>
+</div>
+
+
+
+<script>
+// ============== UTILIDADES ==============
+function fmtMoneda(x, dec=0){
+  if(x===null || x===undefined || isNaN(x)) return '—';
+  return '£' + Number(x).toLocaleString('en-GB', {maximumFractionDigits:dec, minimumFractionDigits:dec});
+}
+function fmtNum(x, dec=2){
+  if(x===null || x===undefined || isNaN(x)) return '—';
+  return Number(x).toLocaleString('es-ES', {maximumFractionDigits:dec, minimumFractionDigits:dec});
+}
+function fmtPct(x, dec=1){
+  if(x===null || x===undefined || isNaN(x)) return '—';
+  return Number(x).toFixed(dec) + '%';
+}
+
+// ============== NAVEGACIÓN ==============
+function irModulo(id){
+  document.querySelectorAll('section.module').forEach(s=>s.classList.remove('active'));
+  var target = document.getElementById(id);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('nav#sidebar a.nav-item').forEach(a=>a.classList.remove('active'));
+  var navItem = document.querySelector('nav#sidebar a[data-mod="'+id+'"]');
+  if(navItem) navItem.classList.add('active');
+  document.getElementById('content').scrollTop = 0;
+  // Disparar recálculos si procede (para que los gráficos se dibujen al entrar)
+  setTimeout(function(){
+    try{
+      if(id==='m-frecuencia') calcFrecuencia();
+      if(id==='m-severidad') calcSeveridad();
+      if(id==='m-agregado') calcAgregado();
+      if(id==='m-reaseguro') calcReaseguro();
+      if(id==='m-puente') calcPuente();
+      if(id==='m-credibilidad') calcCredibilidad();
+      if(id==='m-sensibilidad') calcTornado();
+      if(id==='m-prep') calcPrep();
+      if(id==='m-arboles') construirArboles();
+    }catch(e){console.log(e);}
+  }, 30);
+}
+
+// ============== TEMA ==============
+function toggleTheme(){
+  var html = document.documentElement;
+  if(html.getAttribute('data-theme')==='light'){
+    html.removeAttribute('data-theme');
+  } else {
+    html.setAttribute('data-theme','light');
+  }
+}
+
+// ============== MODAL DIAGNÓSTICO ==============
+function abrirModal(id){ document.getElementById(id).style.display='flex'; }
+function cerrarModal(id){ document.getElementById(id).style.display='none'; }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ cerrarModal('modalDiagnostico'); } });
+
+var perfilRuta = 'guiada';
+var perfilNivel = 'intermedio';
+
+function setRutaDiagnostico(r){
+  perfilRuta = r;
+  document.querySelectorAll('.diag-btn').forEach(b=>b.classList.remove('sel'));
+  event.target.classList.add('sel');
+  document.getElementById('selRuta').value = (
+    {'guiada':'guiada','concepto':'concepto','caso':'caso','linea':'linea','reaseguro':'reaseguro','repaso':'repaso','explorar':'explorar'}[r]
+  );
+  actualizarPerfil();
+}
+function setNivelDiagnostico(n){
+  perfilNivel = n;
+  document.querySelectorAll('.diag-btn-sm').forEach(b=>b.classList.remove('sel'));
+  event.target.classList.add('sel');
+  document.getElementById('selNivel').value = n;
+  actualizarPerfil();
+}
+
+function actualizarPerfil(){
+  perfilNivel = document.getElementById('selNivel').value;
+  perfilRuta = document.getElementById('selRuta').value;
+  var linea = document.getElementById('selLinea').value;
+  var nombresNivel = {inicial:'Inicial', intermedio:'Intermedio', avanzado:'Avanzado', experto:'Experto'};
+  var nombresRuta = {guiada:'Guiada completa', concepto:'Por concepto', caso:'Caso práctico', linea:'Línea de negocio', reaseguro:'Reaseguro', repaso:'Repaso avanzado', explorar:'Exploración libre'};
+  var nombresLinea = {rc:'RC (Employers\' Liability)', auto:'Autos', propiedad:'Propiedad'};
+  document.getElementById('txtNivelActual').innerText = nombresNivel[perfilNivel];
+  document.getElementById('txtRutaActual').innerText = nombresRuta[perfilRuta];
+  document.getElementById('txtLineaActual').innerText = nombresLinea[linea];
+
+  // Si la ruta es "reaseguro", saltar directamente a ese módulo
+  if(perfilRuta==='reaseguro'){ irModulo('m-reaseguro'); }
+  if(perfilRuta==='caso'){ irModulo('m-caso'); }
+}
+</script>
+
+
+<script>
+// ============== FUNCIONES ESTADÍSTICAS PURAS (JS) ==============
+function factorial(n){ var r=1; for(var i=2;i<=n;i++) r*=i; return r; }
+function logFactorial(n){ var r=0; for(var i=2;i<=n;i++) r+=Math.log(i); return r; }
+function combLog(n,k){
+  if(k<0||k>n) return -Infinity;
+  return logFactorial(n)-logFactorial(k)-logFactorial(n-k);
+}
+function poissonPMF(k, lambda){
+  return Math.exp(-lambda + k*Math.log(lambda) - logFactorial(k));
+}
+function binomialPMF(k, n, p){
+  if(k<0||k>n) return 0;
+  return Math.exp(combLog(n,k) + k*Math.log(p) + (n-k)*Math.log(1-p));
+}
+function negbinPMF(k, r, p){
+  // P(N=k) = C(k+r-1, k) p^r (1-p)^k
+  var logC = logFactorial(k+r-1) - logFactorial(k) - logFactorial(r-1);
+  return Math.exp(logC + r*Math.log(p) + k*Math.log(1-p));
+}
+// Generador normal estándar (Box-Muller)
+function randNormal(){
+  var u1 = Math.random(), u2 = Math.random();
+  return Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
+}
+function randLognormal(mu, sigma){
+  return Math.exp(mu + sigma*randNormal());
+}
+function randPoisson(lambda){
+  // Algoritmo de Knuth
+  var L = Math.exp(-lambda), k=0, p=1;
+  do{ k++; p *= Math.random(); }while(p > L);
+  return k-1;
+}
+function randPareto(alpha, xmin){
+  var u = Math.random();
+  return xmin / Math.pow(1-u, 1/alpha);
+}
+function randGamma(shape, scale){
+  // Aproximación Marsaglia-Tsang simplificada para shape>=1
+  if(shape < 1){
+    var u = Math.random();
+    return randGamma(1+shape, scale) * Math.pow(u, 1/shape);
+  }
+  var d = shape - 1/3;
+  var c = 1/Math.sqrt(9*d);
+  while(true){
+    var x, v;
+    do{
+      x = randNormal();
+      v = 1 + c*x;
+    }while(v<=0);
+    v = v*v*v;
+    var u = Math.random();
+    if(Math.log(u) < 0.5*x*x + d - d*v + d*Math.log(v)){
+      return d*v*scale;
+    }
+  }
+}
+function percentil(arr, p){
+  var sorted = arr.slice().sort(function(a,b){return a-b;});
+  var idx = Math.floor(p/100 * (sorted.length-1));
+  return sorted[idx];
+}
+function media(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+function desvEst(arr){
+  var m = media(arr);
+  var sumSq = arr.reduce((a,b)=>a+(b-m)*(b-m),0);
+  return Math.sqrt(sumSq/arr.length);
+}
+</script>
+
+
+<script>
+// ============== MOTOR DE DIBUJO CANVAS GENÉRICO ==============
+function getThemeColors(){
+  var isLight = document.documentElement.getAttribute('data-theme')==='light';
+  return {
+    text: isLight ? '#16222f' : '#eaf2fb',
+    muted: isLight ? '#55697d' : '#9fb3c8',
+    grid: isLight ? '#d7e1ec' : '#223349',
+    bar1: '#2dd4bf',
+    bar2: '#60a5fa',
+    bar3: '#a78bfa',
+    bar4: '#f59e0b',
+    danger: '#ef4444',
+    ok: '#22c55e'
+  };
+}
+
+function clearCanvas(ctx, canvas){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function setupCanvasHiDPI(canvas){
+  var ratio = window.devicePixelRatio || 1;
+  var w = canvas.clientWidth || canvas.width;
+  var h = canvas.height;
+  canvas.width = w*ratio;
+  canvas.height = h*ratio;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(ratio, ratio);
+  return {ctx:ctx, w:w, h:h};
+}
+
+// Gráfico de barras genérico (para PMF de frecuencia, histogramas)
+function dibujarBarras(canvasId, labels, values, opts){
+  opts = opts||{};
+  var canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  var setup = setupCanvasHiDPI(canvas);
+  var ctx = setup.ctx, W = setup.w, H = setup.h;
+  var colors = getThemeColors();
+  clearCanvas(ctx, {width:W,height:H});
+  var padL=50, padB=30, padT=16, padR=16;
+  var plotW = W-padL-padR, plotH = H-padT-padB;
+  var maxV = Math.max.apply(null, values.concat([0.0001]));
+  var n = values.length;
+  var barW = plotW/n * 0.75;
+  var gap = plotW/n * 0.25;
+  // ejes
+  ctx.strokeStyle = colors.grid; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  // barras
+  for(var i=0;i<n;i++){
+    var x = padL + i*(plotW/n) + gap/2;
+    var h = (values[i]/maxV)*plotH;
+    var y = padT+plotH-h;
+    ctx.fillStyle = opts.color || colors.bar1;
+    ctx.fillRect(x, y, barW, h);
+    if(n<=25){
+      ctx.fillStyle = colors.muted; ctx.font='10px Segoe UI'; ctx.textAlign='center';
+      ctx.fillText(labels[i], x+barW/2, padT+plotH+14);
+    }
+  }
+  ctx.fillStyle = colors.muted; ctx.font='10px Segoe UI'; ctx.textAlign='right';
+  ctx.fillText(fmtNum(maxV,3), padL-5, padT+10);
+  ctx.fillText('0', padL-5, padT+plotH);
+  if(opts.title){
+    ctx.fillStyle = colors.text; ctx.font='bold 11px Segoe UI'; ctx.textAlign='left';
+    ctx.fillText(opts.title, padL, 12);
+  }
+}
+
+// Histograma de valores continuos
+function dibujarHistograma(canvasId, data, opts){
+  opts = opts||{};
+  var nbins = opts.nbins || 30;
+  var minV = Math.min.apply(null,data), maxV = Math.max.apply(null,data);
+  if(opts.maxClip) maxV = Math.min(maxV, opts.maxClip);
+  var binW = (maxV-minV)/nbins || 1;
+  var bins = new Array(nbins).fill(0);
+  data.forEach(function(v){
+    var idx = Math.floor((Math.min(v,maxV)-minV)/binW);
+    if(idx>=nbins) idx=nbins-1;
+    if(idx<0) idx=0;
+    bins[idx]++;
+  });
+  var labels = bins.map(function(_,i){ return ''; });
+  dibujarBarras(canvasId, labels, bins, {color:opts.color, title:opts.title});
+  return {minV:minV,maxV:maxV,binW:binW};
+}
+
+// Gráfico de línea simple (para distribución acumulada)
+function dibujarLinea(canvasId, xs, ys, opts){
+  opts = opts||{};
+  var canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  var setup = setupCanvasHiDPI(canvas);
+  var ctx = setup.ctx, W=setup.w, H=setup.h;
+  var colors = getThemeColors();
+  clearCanvas(ctx,{width:W,height:H});
+  var padL=50, padB=24, padT=16, padR=16;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+  var minX=Math.min.apply(null,xs), maxX=Math.max.apply(null,xs);
+  var minY=0, maxY=Math.max.apply(null,ys);
+  ctx.strokeStyle=colors.grid; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.strokeStyle = opts.color || colors.bar2; ctx.lineWidth=2; ctx.beginPath();
+  for(var i=0;i<xs.length;i++){
+    var x = padL + ((xs[i]-minX)/(maxX-minX||1))*plotW;
+    var y = padT+plotH - ((ys[i]-minY)/(maxY-minY||1))*plotH;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+// Gráfico horizontal tipo "tornado"
+function dibujarTornado(canvasId, labels, deltasNeg, deltasPos, baseline){
+  var canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  var setup = setupCanvasHiDPI(canvas);
+  var ctx = setup.ctx, W=setup.w, H=setup.h;
+  var colors = getThemeColors();
+  clearCanvas(ctx,{width:W,height:H});
+  var padL=180, padR=70, padT=20, padB=20;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+  var n = labels.length;
+  var rowH = plotH/n;
+  var maxAbs = 0;
+  for(var i=0;i<n;i++){ maxAbs = Math.max(maxAbs, Math.abs(deltasNeg[i]), Math.abs(deltasPos[i])); }
+  var centerX = padL + plotW/2;
+  ctx.strokeStyle=colors.grid; ctx.beginPath(); ctx.moveTo(centerX,padT); ctx.lineTo(centerX,padT+plotH); ctx.stroke();
+  for(var i=0;i<n;i++){
+    var y = padT + i*rowH + rowH*0.2;
+    var h = rowH*0.6;
+    var wNeg = (Math.abs(deltasNeg[i])/maxAbs)*(plotW/2);
+    var wPos = (Math.abs(deltasPos[i])/maxAbs)*(plotW/2);
+    ctx.fillStyle = colors.danger;
+    ctx.fillRect(centerX-wNeg, y, wNeg, h);
+    ctx.fillStyle = colors.ok;
+    ctx.fillRect(centerX, y, wPos, h);
+    ctx.fillStyle = colors.text; ctx.font='11px Segoe UI'; ctx.textAlign='right';
+    ctx.fillText(labels[i], padL-10, y+h/2+4);
+    ctx.textAlign='left'; ctx.fillStyle=colors.muted; ctx.font='10px Segoe UI';
+    ctx.fillText(fmtMoneda(baseline+deltasPos[i],0), centerX+wPos+5, y+h/2+4);
+  }
+}
+</script>
+
+
+<script>
+document.addEventListener('change', function(e){
+  if(e.target && e.target.id==='freqModelo'){
+    var m = e.target.value;
+    document.getElementById('rowLambda').classList.toggle('hide', m!=='poisson');
+    document.getElementById('rowN').classList.toggle('hide', m!=='binomial');
+    document.getElementById('rowP').classList.toggle('hide', m!=='binomial');
+    document.getElementById('rowK').classList.toggle('hide', m!=='negbin');
+    if(m==='negbin'){ document.getElementById('rowP').classList.remove('hide'); }
+  }
+});
+
+function calcFrecuencia(){
+  var modelo = document.getElementById('freqModelo').value;
+  var lambda = parseFloat(document.getElementById('freqLambda').value);
+  var n = parseInt(document.getElementById('freqN').value);
+  var p = parseFloat(document.getElementById('freqP').value);
+  var k = parseFloat(document.getElementById('freqK').value);
+  document.getElementById('freqLambdaVal').innerText = lambda.toFixed(1);
+  document.getElementById('freqNVal').innerText = n;
+  document.getElementById('freqPVal').innerText = p.toFixed(2);
+  document.getElementById('freqKVal').innerText = k.toFixed(1);
+
+  var maxK = 30, labels=[], values=[], mean=0, variance=0;
+  if(modelo==='poisson'){
+    for(var i=0;i<=maxK;i++){ labels.push(i); values.push(poissonPMF(i,lambda)); }
+    mean = lambda; variance = lambda;
+  } else if(modelo==='binomial'){
+    maxK = Math.min(n, 40);
+    labels=[]; values=[];
+    for(var i=0;i<=maxK;i++){ labels.push(i); values.push(binomialPMF(i,n,p)); }
+    mean = n*p; variance = n*p*(1-p);
+  } else { // negbin: r=k, p = r/(r+mean) -> usamos k como "r" y mean implicito via p slider como prob exito
+    var r = k;
+    for(var i=0;i<=maxK;i++){ labels.push(i); values.push(negbinPMF(i,r,p)); }
+    mean = r*(1-p)/p; variance = r*(1-p)/(p*p);
+  }
+  dibujarBarras('chartFrecuencia', labels, values, {title:'PMF del modelo de frecuencia seleccionado', color:'#2dd4bf'});
+  document.getElementById('kpiFreqMedia').innerText = fmtNum(mean,2);
+  document.getElementById('kpiFreqVar').innerText = fmtNum(variance,2);
+  document.getElementById('kpiFreqRatio').innerText = fmtNum(variance/mean,2);
+  // P(N<=4)
+  var cum=0;
+  for(var i=0;i<=4 && i<values.length;i++) cum+=values[i];
+  document.getElementById('kpiFreqP4').innerText = fmtPct(cum*100,1);
+}
+</script>
+
+
+<script>
+function sevSampleAndMean(dist, p1, p2, nSamples){
+  var samples = [];
+  for(var i=0;i<nSamples;i++){
+    var x;
+    if(dist==='lognormal'){ x = randLognormal(p1, p2); }
+    else if(dist==='pareto'){ x = randPareto(p1, p2*10000); } // alpha=p1, xmin=p2(escalado)
+    else { x = randGamma(p1, p2*10000); } // shape=p1, scale=p2 escalado
+    samples.push(x);
+  }
+  return samples;
+}
+
+function calcSeveridad(){
+  var dist = document.getElementById('sevDist').value;
+  var p1 = parseFloat(document.getElementById('sevP1').value);
+  var p2 = parseFloat(document.getElementById('sevP2').value);
+  var ded = parseFloat(document.getElementById('sevDed').value);
+  var lim = parseFloat(document.getElementById('sevLim').value);
+  document.getElementById('sevP1Val').innerText = p1.toFixed(2);
+  document.getElementById('sevP2Val').innerText = p2.toFixed(2);
+  document.getElementById('sevDedVal').innerText = fmtMoneda(ded);
+  document.getElementById('sevLimVal').innerText = fmtMoneda(lim);
+
+  var N = 8000;
+  var samples = sevSampleAndMean(dist, p1, p2, N);
+  var meanGU = media(samples);
+  var retenido = samples.map(function(x){ return Math.min(x, ded); });
+  var cedido = samples.map(function(x){ return Math.min(Math.max(x-ded,0), lim); });
+  var meanRet = media(retenido);
+  var meanCed = media(cedido);
+  var exceedCount = samples.filter(function(x){ return x > ded+lim; }).length;
+  var probExceed = exceedCount/N*100;
+
+  dibujarHistograma('chartSeveridad', samples, {nbins:40, maxClip: percentil(samples,98), color:'#60a5fa', title:'Distribución de severidad simulada (recortada al percentil 98 para visualización)'});
+
+  document.getElementById('kpiSevMediaGU').innerText = fmtMoneda(meanGU);
+  document.getElementById('kpiSevMediaRet').innerText = fmtMoneda(meanRet);
+  document.getElementById('kpiSevMediaCed').innerText = fmtMoneda(meanCed);
+  document.getElementById('kpiSevProbExced').innerText = fmtPct(probExceed,2);
+}
+</script>
+
+
+<script>
+function calcAgregado(){
+  var nSim = parseInt(document.getElementById('aggNSim').value);
+  var lambda = parseFloat(document.getElementById('aggLambda').value);
+  var mu = parseFloat(document.getElementById('aggMu').value);
+  var sigma = parseFloat(document.getElementById('aggSigma').value);
+  document.getElementById('aggNSimVal').innerText = nSim;
+  document.getElementById('aggLambdaVal').innerText = lambda.toFixed(1);
+  document.getElementById('aggMuVal').innerText = mu.toFixed(1);
+  document.getElementById('aggSigmaVal').innerText = sigma.toFixed(2);
+
+  var Svals = [];
+  for(var i=0;i<nSim;i++){
+    var n = randPoisson(lambda);
+    var s = 0;
+    for(var j=0;j<n;j++){ s += randLognormal(mu, sigma); }
+    Svals.push(s);
+  }
+  var m = media(Svals);
+  var sd = desvEst(Svals);
+  var var99 = percentil(Svals, 99);
+  var tail = Svals.filter(function(x){ return x >= var99; });
+  var tvar99 = tail.length ? media(tail) : var99;
+
+  dibujarHistograma('chartAgregado', Svals, {nbins:40, maxClip: percentil(Svals,99.5), color:'#a78bfa', title:'Distribución simulada de la pérdida agregada anual S (recortada al percentil 99.5%)'});
+
+  document.getElementById('kpiAggMedia').innerText = fmtMoneda(m);
+  document.getElementById('kpiAggSD').innerText = fmtMoneda(sd);
+  document.getElementById('kpiAggVaR99').innerText = fmtMoneda(var99);
+  document.getElementById('kpiAggTVaR99').innerText = fmtMoneda(tvar99);
+}
+</script>
+
+
+<script>
+function calcReaseguro(){
+  var X = parseFloat(document.getElementById('reasX').value);
+  var att = parseFloat(document.getElementById('reasAtt').value);
+  var lim = parseFloat(document.getElementById('reasLim').value);
+  var rep = parseFloat(document.getElementById('reasRep').value);
+  document.getElementById('reasXVal').innerText = fmtMoneda(X);
+  document.getElementById('reasAttVal').innerText = fmtMoneda(att);
+  document.getElementById('reasLimVal').innerText = fmtMoneda(lim);
+  document.getElementById('reasRepVal').innerText = fmtMoneda(rep);
+
+  var pagoRA = Math.min(Math.max(X-att,0), lim);
+  var retenido = X - pagoRA;
+  var excesoLimite = Math.max(X-att,0) > lim ? (Math.max(X-att,0)-lim) : 0;
+  var notificado = X > rep;
+
+  document.getElementById('kpiReasRetenido').innerText = fmtMoneda(retenido);
+  document.getElementById('kpiReasCedido').innerText = fmtMoneda(pagoRA);
+  document.getElementById('kpiReasExcesoLimite').innerText = fmtMoneda(excesoLimite);
+
+  // Barra apilada simple: retenido / cedido / exceso
+  var canvas = document.getElementById('chartReaseguro');
+  var setup = setupCanvasHiDPI(canvas);
+  var ctx = setup.ctx, W=setup.w, H=setup.h;
+  var colors = getThemeColors();
+  clearCanvas(ctx,{width:W,height:H});
+  var padL=50, padR=16, padT=20, padB=20;
+  var plotW = W-padL-padR, plotH = H-padT-padB;
+  var total = retenido+pagoRA+excesoLimite || 1;
+  var x = padL;
+  var segs = [
+    {v:retenido, color:colors.bar2, label:'Retenido'},
+    {v:pagoRA, color:colors.bar1, label:'Cedido RA'},
+    {v:excesoLimite, color:colors.danger, label:'Exceso capa'}
+  ];
+  segs.forEach(function(seg){
+    var w = (seg.v/total)*plotW;
+    ctx.fillStyle = seg.color;
+    ctx.fillRect(x, padT, w, plotH*0.6);
+    if(w>40){
+      ctx.fillStyle = '#fff'; ctx.font='11px Segoe UI'; ctx.textAlign='center';
+      ctx.fillText(seg.label, x+w/2, padT+plotH*0.3+4);
+    }
+    x += w;
+  });
+  ctx.fillStyle = colors.muted; ctx.font='10px Segoe UI'; ctx.textAlign='left';
+  ctx.fillText('¿Notificado al reasegurador? ' + (notificado ? 'Sí' : 'No (por debajo del umbral)'), padL, padT+plotH*0.6+20);
+}
+</script>
+
+
+<script>
+function calcPuente(){
+  var losses = parseFloat(document.getElementById('puenteLosses').value);
+  var uncPct = parseFloat(document.getElementById('puenteUnc').value);
+  var gastosPct = parseFloat(document.getElementById('puenteGastos').value);
+  var tasaInv = parseFloat(document.getElementById('puenteTasaInv').value);
+  var demora = parseFloat(document.getElementById('puenteDemora').value);
+  var beneficioPct = parseFloat(document.getElementById('puenteBeneficio').value);
+
+  document.getElementById('puenteLossesVal').innerText = fmtMoneda(losses);
+  document.getElementById('puenteUncVal').innerText = uncPct+'%';
+  document.getElementById('puenteGastosVal').innerText = gastosPct+'%';
+  document.getElementById('puenteTasaInvVal').innerText = tasaInv.toFixed(1)+'%';
+  document.getElementById('puenteDemoraVal').innerText = demora.toFixed(1);
+  document.getElementById('puenteBeneficioVal').innerText = beneficioPct+'%';
+
+  // Paso 1: pérdidas + margen de incertidumbre
+  var lossesConUnc = losses * (1 + uncPct/100);
+  // Paso 2: cargar gastos (sobre prima, por lo que se divide)
+  var gastosFrac = gastosPct/100;
+  var tras_gastos = (gastosFrac < 1) ? lossesConUnc / (1-gastosFrac) : NaN;
+  // Paso 3: descontar por inversión
+  var tras_inversion = tras_gastos / Math.pow(1+tasaInv/100, demora);
+  // Paso 4: cargar beneficio
+  var beneficioFrac = beneficioPct/100;
+  var primaTecnica = (beneficioFrac < 1) ? tras_inversion / (1-beneficioFrac) : NaN;
+
+  var lossRatio = primaTecnica>0 ? (losses/primaTecnica*100) : NaN;
+  var expenseProfitRatio = gastosPct + beneficioPct;
+
+  document.getElementById('kpiPuentePrimaTecnica').innerText = fmtMoneda(primaTecnica);
+  document.getElementById('kpiPuenteLossRatio').innerText = fmtPct(lossRatio,1);
+  document.getElementById('kpiPuenteExpenseRatio').innerText = fmtPct(expenseProfitRatio,1);
+
+  // Validaciones
+  var alertasHTML = '';
+  if(gastosPct+beneficioPct >= 100){
+    alertasHTML += '<div class="alert danger"><span class="sem r"></span> ALERTA: Gastos+Beneficio ('+(gastosPct+beneficioPct)+'%) supera o iguala el 100% de la prima — la fórmula de división por (1-%) se vuelve inconsistente o negativa. Reduce estos porcentajes.</div>';
+  } else if(gastosPct+beneficioPct >= 70){
+    alertasHTML += '<div class="alert warn"><span class="sem a"></span> Atención: la carga conjunta de gastos+beneficio es muy alta ('+(gastosPct+beneficioPct)+'%), deja poco margen de pérdidas sobre prima (loss ratio bajo).</div>';
+  } else {
+    alertasHTML += '<div class="alert ok"><span class="sem g"></span> La estructura de cargas es internamente consistente (gastos+beneficio = '+(gastosPct+beneficioPct)+'% &lt; 100%).</div>';
+  }
+  if(uncPct>0 && uncPct<=50){
+    alertasHTML += '<div class="alert warn"><span class="sem a"></span> Recuerda: el libro cuestiona el loading de incertidumbre basado en SD cuando hay buena diversificación de cartera — verifica que no estés ya incluyendo un margen de prudencia dentro del propio modelo de severidad/frecuencia (riesgo de doble contabilización).</div>';
+  }
+  document.getElementById('puenteAlertas').innerHTML = alertasHTML;
+
+  // Detalle con sustitución numérica
+  document.getElementById('puenteDetalle').innerHTML =
+    '<p><b>1. Pérdidas + margen incertidumbre:</b> '+fmtMoneda(losses)+' × (1+'+uncPct+'%) = '+fmtMoneda(lossesConUnc)+'</p>'+
+    '<p><b>2. Carga de gastos:</b> '+fmtMoneda(lossesConUnc)+' / (1-'+gastosPct+'%) = '+fmtMoneda(tras_gastos)+'</p>'+
+    '<p><b>3. Descuento por inversión:</b> '+fmtMoneda(tras_gastos)+' / (1+'+tasaInv+'%)^'+demora+' = '+fmtMoneda(tras_inversion)+'</p>'+
+    '<p><b>4. Carga de beneficio:</b> '+fmtMoneda(tras_inversion)+' / (1-'+beneficioPct+'%) = <b style="color:var(--accent);">'+fmtMoneda(primaTecnica)+' = PRIMA TÉCNICA</b></p>'+
+    '<p class="small">Referencia: Sección 19.1 "Cost Plus in Detail" del libro, reproduciendo la secuencia del ejemplo del Capítulo 1 (Employers\' Liability).</p>';
+
+  // Gráfico Waterfall
+  dibujarWaterfall('chartPuente', [
+    {label:'Pérdidas\\nesperadas', value:losses},
+    {label:'+Incertidumbre', value:lossesConUnc-losses},
+    {label:'+Gastos', value:tras_gastos-lossesConUnc},
+    {label:'-Inversión', value:tras_inversion-tras_gastos},
+    {label:'+Beneficio', value:primaTecnica-tras_inversion},
+    {label:'=Prima\\nTécnica', value:primaTecnica, isTotal:true}
+  ]);
+}
+
+function dibujarWaterfall(canvasId, steps){
+  var canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  var setup = setupCanvasHiDPI(canvas);
+  var ctx = setup.ctx, W=setup.w, H=setup.h;
+  var colors = getThemeColors();
+  clearCanvas(ctx,{width:W,height:H});
+  var padL=60, padR=20, padT=20, padB=40;
+  var plotW=W-padL-padR, plotH=H-padT-padB;
+  var n = steps.length;
+  var barW = plotW/n*0.6;
+  var gap = plotW/n*0.4;
+  var maxVal = 0, cum=0;
+  var cums = [];
+  steps.forEach(function(s,i){
+    if(i===0 || s.isTotal){ cum = s.isTotal ? s.value : s.value; }
+    else { cum += s.value; }
+    cums.push(cum);
+    maxVal = Math.max(maxVal, cum);
+  });
+  maxVal *= 1.1;
+  var cumRun = 0;
+  for(var i=0;i<n;i++){
+    var x = padL + i*(plotW/n) + gap/2;
+    var s = steps[i];
+    var yTop, h, color;
+    if(i===0){
+      cumRun = s.value;
+      yTop = padT+plotH - (cumRun/maxVal)*plotH;
+      h = (s.value/maxVal)*plotH;
+      color = colors.bar2;
+    } else if(s.isTotal){
+      yTop = padT+plotH - (s.value/maxVal)*plotH;
+      h = (s.value/maxVal)*plotH;
+      color = colors.bar1;
+      cumRun = s.value;
+    } else {
+      var prevCum = cumRun;
+      cumRun += s.value;
+      var top = Math.max(prevCum, cumRun);
+      var bot = Math.min(prevCum, cumRun);
+      yTop = padT+plotH - (top/maxVal)*plotH;
+      h = ((top-bot)/maxVal)*plotH;
+      color = s.value>=0 ? colors.ok : colors.danger;
+    }
+    ctx.fillStyle = color;
+    ctx.fillRect(x, yTop, barW, h);
+    ctx.fillStyle = colors.text; ctx.font='9px Segoe UI'; ctx.textAlign='center';
+    var lines = s.label.split('\\n');
+    lines.forEach(function(line, li){
+      ctx.fillText(line, x+barW/2, padT+plotH+14+li*11);
+    });
+    ctx.font='9px Segoe UI'; ctx.fillStyle=colors.muted;
+    ctx.fillText(fmtMoneda(i===0||s.isTotal?s.value:cumRun,0), x+barW/2, yTop-4);
+  }
+}
+</script>
+
+
+<script>
+function calcCredibilidad(){
+  var n = parseFloat(document.getElementById('credN').value);
+  var k = parseFloat(document.getElementById('credK').value);
+  var client = parseFloat(document.getElementById('credClient').value);
+  var market = parseFloat(document.getElementById('credMarket').value);
+  document.getElementById('credNVal').innerText = n;
+  document.getElementById('credKVal').innerText = k.toFixed(1);
+  document.getElementById('credClientVal').innerText = fmtMoneda(client);
+  document.getElementById('credMarketVal').innerText = fmtMoneda(market);
+
+  var Z = n/(n+k);
+  var primaCred = Z*client + (1-Z)*market;
+
+  document.getElementById('kpiCredZ').innerText = fmtNum(Z,3);
+  document.getElementById('kpiCredPrima').innerText = fmtMoneda(primaCred);
+  var lectura = Z>0.7 ? 'Alta credibilidad propia' : (Z<0.3 ? 'Baja credibilidad: domina el mercado' : 'Credibilidad mixta');
+  document.getElementById('kpiCredInterpretacion').innerText = lectura;
+}
+</script>
+
+
+<script>
+var datosCap1 = [
+  {anio:2005, perdida:890882, exposicion:67556},
+  {anio:2006, perdida:1055998, exposicion:77285},
+  {anio:2007, perdida:936637, exposicion:91336},
+  {anio:2008, perdida:1153948, exposicion:98789},
+  {anio:2009, perdida:1290733, exposicion:114596},
+  {anio:2010, perdida:1548879, exposicion:123289},
+  {anio:2011, perdida:1973818, exposicion:145317},
+  {anio:2012, perdida:1448684, exposicion:155574},
+  {anio:2013, perdida:1831386, exposicion:161797},
+  {anio:2014, perdida:842957, exposicion:170192}
+];
+var exposicion2015 = 165000;
+
+function calcPrep(){
+  var r = parseFloat(document.getElementById('prepInfl').value)/100;
+  var rExp = parseFloat(document.getElementById('prepInflExp').value)/100;
+  var excluir2014 = document.getElementById('prepExcluir2014').checked;
+  document.getElementById('prepInflVal').innerText = (r*100).toFixed(1)+'%';
+  document.getElementById('prepInflExpVal').innerText = (rExp*100).toFixed(1)+'%';
+  document.getElementById('prepExcluirVal').innerText = excluir2014 ? 'Sí' : 'No';
+
+  var tAhora = 2015;
+  var filas = datosCap1.map(function(d){
+    var dt = tAhora - d.anio;
+    var factorRev = Math.pow(1+r, dt);
+    var revaluado = d.perdida * factorRev;
+    var expRev = d.exposicion * Math.pow(1+rExp, dt);
+    var ajustado = revaluado * (exposicion2015/expRev);
+    return Object.assign({}, d, {factorRev:factorRev, revaluado:revaluado, expRev:expRev, ajustado:ajustado});
+  });
+
+  var filasUsadas = excluir2014 ? filas.filter(function(f){ return f.anio!==2014; }) : filas;
+
+  var mediaBruta = media(filasUsadas.map(function(f){return f.perdida;}));
+  var mediaRevaluada = media(filasUsadas.map(function(f){return f.revaluado;}));
+  var mediaFinal = media(filasUsadas.map(function(f){return f.ajustado;}));
+
+  document.getElementById('kpiPrepPromedioBruto').innerText = fmtMoneda(mediaBruta);
+  document.getElementById('kpiPrepRevaluado').innerText = fmtMoneda(mediaRevaluada);
+  document.getElementById('kpiPrepFinal').innerText = fmtMoneda(mediaFinal);
+
+  var tabla = '<tr><th>Año</th><th>Pérdida (£)</th><th>Factor reval.</th><th>Revalorizada (£)</th><th>Exposición rev. (£)</th><th>Ajustada final (£)</th></tr>';
+  filas.forEach(function(f){
+    var excluidaStyle = (excluir2014 && f.anio===2014) ? 'style="opacity:0.4;"' : '';
+    tabla += '<tr '+excluidaStyle+'><td>'+f.anio+'</td><td>'+fmtMoneda(f.perdida)+'</td><td>'+f.factorRev.toFixed(3)+'</td><td>'+fmtMoneda(f.revaluado)+'</td><td>'+fmtMoneda(f.expRev)+'</td><td>'+fmtMoneda(f.ajustado)+'</td></tr>';
+  });
+  document.getElementById('tablaPrepResultado').innerHTML = tabla;
+}
+</script>
+
+
+<script>
+function calcPuenteConValores(losses, uncPct, gastosPct, tasaInv, demora, beneficioPct){
+  var lossesConUnc = losses*(1+uncPct/100);
+  var trasGastos = lossesConUnc/(1-gastosPct/100);
+  var trasInversion = trasGastos/Math.pow(1+tasaInv/100, demora);
+  var primaTecnica = trasInversion/(1-beneficioPct/100);
+  return primaTecnica;
+}
+
+function calcTornado(){
+  var base = {
+    losses: parseFloat(document.getElementById('puenteLosses') ? document.getElementById('puenteLosses').value : 1973422),
+    unc: parseFloat(document.getElementById('puenteUnc') ? document.getElementById('puenteUnc').value : 0),
+    gastos: parseFloat(document.getElementById('puenteGastos') ? document.getElementById('puenteGastos').value : 15),
+    tasaInv: parseFloat(document.getElementById('puenteTasaInv') ? document.getElementById('puenteTasaInv').value : 3),
+    demora: parseFloat(document.getElementById('puenteDemora') ? document.getElementById('puenteDemora').value : 3),
+    beneficio: parseFloat(document.getElementById('puenteBeneficio') ? document.getElementById('puenteBeneficio').value : 10)
+  };
+  var baseline = calcPuenteConValores(base.losses, base.unc, base.gastos, base.tasaInv, base.demora, base.beneficio);
+
+  var variables = [
+    {key:'losses', label:'Pérdidas esperadas', pct:0.20},
+    {key:'gastos', label:'% Gastos', pct:0.20},
+    {key:'beneficio', label:'% Beneficio objetivo', pct:0.20},
+    {key:'tasaInv', label:'Tasa de inversión', pct:0.20},
+    {key:'demora', label:'Demora cobro-pago', pct:0.20},
+    {key:'unc', label:'Margen incertidumbre', pct:0.20}
+  ];
+
+  var labels=[], deltasNeg=[], deltasPos=[];
+  variables.forEach(function(v){
+    var low = Object.assign({}, base);
+    var high = Object.assign({}, base);
+    low[v.key] = base[v.key]*(1-v.pct);
+    high[v.key] = base[v.key]*(1+v.pct);
+    var pLow = calcPuenteConValores(low.losses, low.unc, low.gastos, low.tasaInv, low.demora, low.beneficio);
+    var pHigh = calcPuenteConValores(high.losses, high.unc, high.gastos, high.tasaInv, high.demora, high.beneficio);
+    labels.push(v.label);
+    deltasNeg.push(Math.min(pLow,pHigh)-baseline);
+    deltasPos.push(Math.max(pLow,pHigh)-baseline);
+  });
+
+  // Ordenar por impacto total descendente
+  var idx = labels.map(function(_,i){return i;});
+  idx.sort(function(a,b){ return (Math.abs(deltasPos[b])+Math.abs(deltasNeg[b])) - (Math.abs(deltasPos[a])+Math.abs(deltasNeg[a])); });
+  var labelsOrd = idx.map(function(i){return labels[i];});
+  var negOrd = idx.map(function(i){return deltasNeg[i];});
+  var posOrd = idx.map(function(i){return deltasPos[i];});
+
+  dibujarTornado('chartTornado', labelsOrd, negOrd, posOrd, baseline);
+}
+
+function aplicarEscenario(){
+  var esc = document.getElementById('selEscenario').value;
+  var escenarios = {
+    base: {losses:1973422, unc:0, gastos:15, tasaInv:3, demora:3, beneficio:10, desc:'Valores exactos del Capítulo 1 del libro.'},
+    optimista: {losses:1973422, unc:0, gastos:12, tasaInv:4, demora:2.5, beneficio:8, desc:'Menor demora, mejor tasa de inversión, menos gastos.'},
+    estres: {losses:1973422*1.3, unc:25, gastos:18, tasaInv:2, demora:4, beneficio:10, desc:'Mayor severidad por inflación de siniestros + margen de incertidumbre.'},
+    hard: {losses:1973422, unc:10, gastos:15, tasaInv:3, demora:3, beneficio:18, desc:'Mercado "hard": mayor margen de beneficio objetivo.'}
+  };
+  var e = escenarios[esc];
+  var prima = calcPuenteConValores(e.losses, e.unc, e.gastos, e.tasaInv, e.demora, e.beneficio);
+  var lossRatio = e.losses/prima*100;
+  document.getElementById('escenarioResultado').innerHTML =
+    '<div class="kpi"><div class="v">'+fmtMoneda(prima)+'</div><div class="l">Prima técnica</div></div>'+
+    '<div class="kpi"><div class="v">'+fmtPct(lossRatio,1)+'</div><div class="l">Loss ratio esperado</div></div>'+
+    '<div class="kpi"><div class="v" style="font-size:.85rem;">'+e.desc+'</div><div class="l">Descripción del escenario</div></div>';
+}
+</script>
+
+<script>
+var QUIZ_DATA = [{"q": "Según el libro, ¿qué distribuciones de conteo pertenecen a la clase Panjer (a,b,0)?", "opts": ["Poisson, Binomial, Binomial Negativa", "Lognormal, Pareto, Gamma", "Normal, Exponencial, Weibull", "Solo la Poisson"], "correct": 0, "exp": "Las tres son las únicas distribuciones de la clase Panjer (Ec. 14.1), caracterizada por p_k/p_(k-1)=a+b/k (Cap. 14)."}, {"q": "En el ejemplo de Employers' Liability del Capítulo 1, ¿cuál es la prima técnica final aproximada?", "opts": ["£1.30M", "£1.97M", "£2.08M", "£2.36M"], "correct": 3, "exp": "Tras cargar gastos (15%), descontar inversión (3%/3 años) y cargar beneficio (10%) sobre las pérdidas cedidas (£1.97M), la prima técnica es ≈£2.36M."}, {"q": "¿Qué significa IBNER?", "opts": ["Incurred But Not Enough Reserved", "Incurred But Never Reported", "Insured But Not Eligible for Reinsurance", "Income Before Net Expenses Ratio"], "correct": 0, "exp": "IBNER = Incurred But Not Enough Reserved: error de reserva en siniestros abiertos (Cap. 15)."}, {"q": "En una capa de reaseguro 'L xs A' (p.ej. £3M xs £2M), ¿qué paga el reasegurador para un siniestro de £4M?", "opts": ["£4M completo", "£2M (el límite siempre)", "£2M (4M-2M de ataque, topado por el límite de 3M)", "Nada, está por debajo del umbral"], "correct": 2, "exp": "Pago = min(max(4M-2M,0), 3M) = min(2M,3M) = £2M."}, {"q": "Según Bühlmann, si Z = n/(n+k), ¿qué ocurre si n (experiencia propia) crece mucho?", "opts": ["Z tiende a 0", "Z tiende a 1 (más peso a la experiencia propia)", "Z es siempre 0.5", "Z no depende de n"], "correct": 1, "exp": "A mayor n, más confiamos en la experiencia propia del cliente, por lo que Z se acerca a 1 (Cap. 25)."}, {"q": "¿Por qué los modelos de catástrofe NO usan la experiencia histórica del cliente como input principal?", "opts": ["Porque es ilegal", "Porque la credibilidad de esa experiencia es casi nula (eventos muy raros)", "Porque es más caro", "Porque el libro lo prohíbe explícitamente"], "correct": 1, "exp": "Las catástrofes son tan raras a nivel de cliente individual que su experiencia tiene credibilidad cercana a cero (Cap. 24, en el lenguaje del Cap. 25)."}, {"q": "¿Cuál de estas NO es una de las 5 metodologías de tarificación del GRIP Report citadas en el libro?", "opts": ["Tariff", "Cost Plus", "Distribución", "Machine Learning puro"], "correct": 3, "exp": "Las 5 son: Tariff, Qualitative, Cost Plus, Distribution, Industrial (Fig. 19.2). 'Machine Learning puro' no es una de ellas en el libro."}, {"q": "En el modelo de riesgo colectivo, S = X1+...+XN. ¿Qué fórmula da la media teórica de S?", "opts": ["E[S] = E[N] + E[X]", "E[S] = E[N] × E[X]", "E[S] = Var[N] × Var[X]", "E[S] = max(N,X)"], "correct": 1, "exp": "La media de la pérdida agregada es el producto de la media de frecuencia por la media de severidad (Cap. 17)."}];
+</script>
+
+<script>
+function toggleTreeDetail(id){
+  var el = document.getElementById(id);
+  if(el) el.classList.toggle('show');
+}
+
+function nodoArbol(id, texto, detalleHTML){
+  return '<button class="tree-btn" onclick="toggleTreeDetail(\''+id+'\')">'+texto+'</button>'+
+         '<div class="tree-detail" id="'+id+'">'+detalleHTML+'</div>';
+}
+
+function construirArboles(){
+  // ÁRBOL MAESTRO
+  var maestro = '';
+  maestro += nodoArbol('tm1', '1. ¿Conozco bien el riesgo?',
+    '<b>Significado:</b> ¿Tengo contexto cualitativo suficiente (negocio, operativa, cambios legales)?<br>'+
+    '<b>Si NO:</b> volver a 7·Familiarización con el riesgo antes de modelizar.<br>'+
+    '<b>Si SÍ:</b> pasar a evaluar los datos.<br><span class="badge libro">Cap. 7</span>');
+  maestro += nodoArbol('tm2', '2. ¿Tengo datos individuales de siniestro o solo agregados?',
+    '<b>Datos agregados (por año):</b> usar burning cost tradicional (Cap. 2/11), limitado: no permite deducibles ni frecuencia/severidad separadas.<br>'+
+    '<b>Datos individuales:</b> seguir con el modelo frecuencia/severidad completo (Cap. 6, 13-17).<br><span class="badge libro">Cap. 1, 11</span>');
+  maestro += nodoArbol('tm3', '3. ¿Cuántos años de experiencia tengo?',
+    '<b>Pocos años (1-10):</b> apoyarse en pocos modelos bien entendidos (Poisson/Lognormal/Pareto), no "carpet-bombing" estadístico.<br>'+
+    '<b>Experiencia muy escasa / riesgo raro:</b> usar credibilidad (Cap. 25) o modelos de catástrofe (Cap. 24) si aplica.<br><span class="badge libro">Cap. 12, 14, 16, 25</span>');
+  maestro += nodoArbol('tm4', '4. ¿Hay estructura de reaseguro / deducibles?',
+    '<b>Sí:</b> modelizar severidad ground-up y aplicar deducible/límite para obtener retenido/cedido (Cap. 11, 20-22).<br>'+
+    '<b>No (seguro directo sin modificadores):</b> el coste bruto = coste cedido.<br><span class="badge libro">Cap. 3, 20</span>');
+  maestro += nodoArbol('tm5', '5. ¿Qué metodología de prima aplico?',
+    '<b>Cost Plus</b> (la más común): pérdidas + incertidumbre + gastos − inversión + beneficio.<br>'+
+    '<b>Tarifa / Cualitativa / Distribución / Industrial:</b> ver Fig. 19.2 del libro según contexto regulatorio o de mercado.<br><span class="badge libro">Cap. 19</span>');
+  document.getElementById('arbolMaestro').innerHTML = maestro;
+
+  // ÁRBOL FRECUENCIA
+  var freq = '';
+  freq += nodoArbol('tf1', '¿Ratio Varianza/Media ≈ 1?',
+    '<b>Sí:</b> Poisson es un buen punto de partida (un solo parámetro λ).<br>'+
+    '<b>&lt;1:</b> considerar Binomial (modelo de riesgo individual).<br>'+
+    '<b>&gt;1 (sobredispersión):</b> considerar Binomial Negativa (heterogeneidad).<br>'+
+    '<b class="small">Advertencia del libro: "things are more complicated than that" — validar con bondad de ajuste.</b><br><span class="badge libro">Cap. 14</span>');
+  freq += nodoArbol('tf2', '¿Tengo IBNR pendiente de ajustar?',
+    '<b>Sí:</b> aplicar desarrollo de triángulos (chain ladder) sobre conteos antes de calibrar el modelo.<br>'+
+    '<b>No / ya ultimado:</b> calibrar directamente sobre conteos ultimados.<br><span class="badge libro">Cap. 13</span>');
+  document.getElementById('arbolFrecuencia').innerHTML = freq;
+
+  // ÁRBOL SEVERIDAD
+  var sev = '';
+  sev += nodoArbol('ts1', '¿Qué preguntas necesito responder?',
+    '<b>Solo media/tendencia:</b> análisis exploratorio de importe medio puede bastar (líneas con alto volumen, ej. motor masivo).<br>'+
+    '<b>Deducibles/límites/colas:</b> se necesita la distribución completa (Lognormal/Pareto/Gamma), no solo la media.<br><span class="badge libro">Cap. 16</span>');
+  sev += nodoArbol('ts2', '¿Los datos muestran una recta en escala log-log (CDF)?',
+    '<b>Sí:</b> fuerte indicio de Pareto de un parámetro en la cola.<br>'+
+    '<b>No:</b> probar Lognormal o Gamma para el cuerpo, y Pareto/GPD solo para la cola si hay grandes pérdidas separadas.<br><span class="badge libro">Cap. 16, Fig. 16.2</span>');
+  sev += nodoArbol('ts3', '¿Hay IBNER (reservas de siniestros abiertos poco fiables)?',
+    '<b>Sí:</b> corregir con factores de desarrollo de importes antes de calibrar severidad.<br>'+
+    '<b>No:</b> usar importes incurridos directamente.<br><span class="badge libro">Cap. 15</span>');
+  document.getElementById('arbolSeveridad').innerHTML = sev;
+
+  // ÁRBOL GRANDES SINIESTROS
+  var grandes = '';
+  grandes += nodoArbol('tg1', '¿Es un riesgo de catástrofe (terremoto, huracán...)?',
+    '<b>Sí:</b> la experiencia del cliente tiene credibilidad ~0 → usar modelo de catástrofe (bases de eventos + ciencia del fenómeno), NO experiencia propia.<br>'+
+    '<b>No:</b> seguir con el flujo normal de severidad/credibilidad.<br><span class="badge libro">Cap. 24, 25</span>');
+  grandes += nodoArbol('tg2', '¿Tengo suficiente experiencia propia de grandes pérdidas?',
+    '<b>Sí (cartera grande/larga historia):</b> experience rating con severidad ajustada a la cola.<br>'+
+    '<b>No:</b> exposure rating con curvas de mercado (con cautela: "orígenes misteriosos", Cap. 21).<br><span class="badge libro">Cap. 20, 21</span>');
+  grandes += nodoArbol('tg3', '¿Hay umbral de notificación al reasegurador?',
+    '<b>Sí:</b> modelar severidad por encima del umbral como distribución truncada (Pareto/GPD).<br>'+
+    '<b>No:</b> usar toda la base de datos de pérdidas.<br><span class="badge libro">Cap. 20</span>');
+  document.getElementById('arbolGrandes').innerHTML = grandes;
+
+  // ÁRBOL TÉCNICA -> COMERCIAL
+  var tc = '';
+  tc += nodoArbol('tt1', '¿La prima técnica es competitiva en el mercado?',
+    '<b>Sí:</b> cobrar la prima técnica o cerca de ella.<br>'+
+    '<b>No (mercado "soft"):</b> evaluar bajar precio por retención/captación, dentro de límites de retorno de capital.<br><span class="badge libro">Cap. 19.3</span>');
+  tc += nodoArbol('tt2', '¿Es una línea personal de alto volumen?',
+    '<b>Sí:</b> considerar price optimisation (elasticidad de demanda, canal de distribución).<br>'+
+    '<b>No (comercial/reaseguro):</b> el ajuste comercial suele ser más discrecional/negociado por el suscriptor.<br><span class="badge libro">Cap. 19.3, 19.4</span>');
+  tc += nodoArbol('tt3', '¿Hay señales de deterioro del riesgo (siniestros, cambios)?',
+    '<b>Sí:</b> considerar subir precio para señalizar descontento o compensar mayor coste esperado.<br>'+
+    '<b>No:</b> mantener o ajustar levemente según ciclo de mercado.<br><span class="badge libro">Cap. 19.3</span>');
+  document.getElementById('arbolTecnicaComercial').innerHTML = tc;
+}
+
+// ============== QUIZ ==============
+var quizRespondidas = {};
+var quizCorrectCount = 0;
+function responderQuiz(qIdx, optIdx){
+  if(quizRespondidas[qIdx]!==undefined) return;
+  quizRespondidas[qIdx] = optIdx;
+  var qDiv = document.getElementById('quizQ'+qIdx);
+  var buttons = qDiv.querySelectorAll('.quiz-opt');
+  var correctIdx = QUIZ_DATA[qIdx].correct;
+  buttons[optIdx].classList.add(optIdx===correctIdx ? 'correct' : 'wrong');
+  if(optIdx!==correctIdx){ buttons[correctIdx].classList.add('correct'); }
+  document.getElementById('quizExp'+qIdx).style.display='block';
+  if(optIdx===correctIdx){ quizCorrectCount++; }
+  document.getElementById('quizScore').innerText = quizCorrectCount + ' / ' + QUIZ_DATA.length;
+}
+
+// ============== GLOSARIO ==============
+function filtrarGlosario(){
+  var q = document.getElementById('glosarioBuscar').value.toLowerCase();
+  var items = document.querySelectorAll('.glossary-item');
+  items.forEach(function(it){
+    var txt = it.innerText.toLowerCase();
+    it.style.display = txt.includes(q) ? 'block' : 'none';
+  });
+}
+
+// ============== CASO INTEGRAL TOGGLE ==============
+function toggleCasoPaso(n){
+  for(var i=1;i<=9;i++){
+    var el = document.getElementById('casoPaso'+i);
+    if(el) el.classList.remove('show');
+  }
+  var target = document.getElementById('casoPaso'+n);
+  if(target) target.classList.add('show');
+  document.querySelectorAll('#m-caso .flow-step').forEach(function(fs){ fs.classList.remove('current'); });
+  event.currentTarget.classList.add('current');
+}
+</script>
+
+
+<script>
+var PROCESO_NODOS = [
+  {id:'m-riesgo', label:'1. Riesgo', detalle:'Familiarizarse con el riesgo: negocio, operativa, contexto legal. <span class="badge libro">Cap. 7</span>'},
+  {id:'m-producto', label:'2. Producto', detalle:'Definir estructura de póliza: deducibles, límites, AAD. <span class="badge libro">Cap. 2-3</span>'},
+  {id:'m-datos', label:'3. Datos', detalle:'Siniestros, exposición, cobertura. <span class="badge libro">Cap. 8</span>'},
+  {id:'m-prep', label:'4. Preparación', detalle:'IBNR, inflación, exposición, IBNER. <span class="badge libro">Cap. 9-10, 13, 15</span>'},
+  {id:'m-frecuencia', label:'5. Frecuencia', detalle:'Modelo de conteo: Poisson/Binomial/BinNeg. <span class="badge libro">Cap. 14</span>'},
+  {id:'m-severidad', label:'6. Severidad', detalle:'Modelo de importes: Lognormal/Pareto/Gamma. <span class="badge libro">Cap. 16</span>'},
+  {id:'m-agregado', label:'7. Agregado', detalle:'Combinar frecuencia×severidad = S. <span class="badge libro">Cap. 17</span>'},
+  {id:'m-incertidumbre', label:'8. Incertidumbre', detalle:'Proceso, parámetro, modelo, datos. <span class="badge libro">Cap. 18</span>'},
+  {id:'m-costebruto', label:'9. Coste bruto', detalle:'Pérdidas esperadas sin descontar reparto. <span class="badge libro">Sec. 1.1.1</span>'},
+  {id:'m-reaseguro', label:'10. Reaseguro', detalle:'Payout de capas XL, exposure rating. <span class="badge libro">Cap. 20-22</span>'},
+  {id:'m-costeneto', label:'11. Coste neto', detalle:'Pérdidas cedidas vs. retenidas. <span class="badge libro">Sec. 1.1.2</span>'},
+  {id:'m-gastos', label:'12. Gastos', detalle:'Carga de gastos + descuento inversión. <span class="badge libro">Sec. 19.1</span>'},
+  {id:'m-capital', label:'13. Capital', detalle:'Carga de capital y beneficio objetivo. <span class="badge libro">Sec. 19.2</span>'},
+  {id:'m-puente', label:'14. Puente', detalle:'Waterfall completo: coste → prima técnica. <span class="badge libro">Fig. 19.3</span>'},
+  {id:'m-comercial', label:'15. Comercial', detalle:'Ajustes por ciclo de mercado y competencia. <span class="badge libro">Sec. 19.3</span>'},
+  {id:'m-monitor', label:'16. Monitor', detalle:'Control continuo, vuelta al ciclo. <span class="badge libro">Sec. 19.3-19.4</span>'}
+];
+
+function construirProcMap(){
+  var cont = document.getElementById('procMap');
+  if(!cont) return;
+  var html = '';
+  PROCESO_NODOS.forEach(function(nodo, i){
+    html += '<div class="proc-node" onclick="mostrarDetalleProceso('+i+')">'+nodo.label+'</div>';
+    if(i<PROCESO_NODOS.length-1 && (i+1)%4!==0){ html += '<div class="proc-arrow">➜</div>'; }
+  });
+  cont.innerHTML = html;
+}
+function mostrarDetalleProceso(i){
+  var nodo = PROCESO_NODOS[i];
+  document.getElementById('procDetalle').innerHTML =
+    '<h4>'+nodo.label+'</h4><p>'+nodo.detalle+'</p>'+
+    '<button class="primary" onclick="irModulo(\''+nodo.id+'\')">Ir a este módulo ➜</button>';
+}
+
+// ============== INICIALIZACIÓN GENERAL ==============
+window.addEventListener('DOMContentLoaded', function(){
+  construirProcMap();
+  construirArboles();
+  calcPrep();
+  calcFrecuencia();
+  calcSeveridad();
+  calcPuente();
+  calcCredibilidad();
+  aplicarEscenario();
+});
+</script>
+
+</body>
+</html>
