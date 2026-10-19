@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Ejecutivo SFCR — Grupo Mapfre 2025</title>
+<style>
+:root{
+  --color-primary:#B40025;
+  --color-secondary:#1A1A1A;
+  --color-accent:#E30613;
+  --color-background:#F5F5F7;
+  --color-surface:#FFFFFF;
+  --color-text:#1C1C1E;
+  --color-muted:#6B6B70;
+  --color-positive:#1C6B3C;
+  --color-warning:#9A6B00;
+  --color-negative:#A3121C;
+  --border:#E0E0E2;
+  --radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.06);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;font-family:var(--font);background:var(--color-background);color:var(--color-text);font-size:15px;line-height:1.5;}
+a{color:var(--color-primary);}
+h1,h2,h3,h4{margin:0 0 .5em 0;font-weight:700;color:var(--color-secondary);}
+h1{font-size:1.9rem;} h2{font-size:1.4rem;border-bottom:3px solid var(--color-primary);padding-bottom:8px;margin-top:0;}
+h3{font-size:1.1rem;color:var(--color-primary);}
+p{margin:.4em 0;}
+.small{font-size:.8rem;color:var(--color-muted);}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:700;letter-spacing:.3px;margin-right:4px;vertical-align:middle;}
+.tag-dato{background:#E7F0FF;color:#1552B0;}
+.tag-calc{background:#FFF1DE;color:#9A5B00;}
+.tag-interp{background:#F0E8FF;color:#6425B5;}
+.tag-limit{background:#FFE7E7;color:#A3121C;}
+.tag-reco{background:#E3F6EA;color:#1C6B3C;}
+.badge{display:inline-block;padding:3px 10px;border-radius:14px;font-size:.72rem;font-weight:600;}
+.badge-verificado{background:#E3F6EA;color:#1C6B3C;}
+.badge-calculado{background:#FFF1DE;color:#9A5B00;}
+.badge-noreconciliado{background:#FFE7E7;color:#A3121C;}
+.badge-nodisponible{background:#EDEDEE;color:#6B6B70;}
+
+/* HEADER / NAV */
+#topbar{position:sticky;top:0;z-index:100;background:var(--color-surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow);}
+#topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;max-width:1500px;margin:0 auto;flex-wrap:wrap;gap:10px;}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand img{height:34px;}
+.brand-text{font-weight:800;color:var(--color-primary);font-size:1.05rem;}
+.brand-sub{font-size:.72rem;color:var(--color-muted);}
+#controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+button, select{font-family:var(--font);font-size:.82rem;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--color-text);transition:.15s;}
+button:hover, select:hover{border-color:var(--color-primary);}
+button.active, .toggle-btn.active{background:var(--color-primary);color:#fff;border-color:var(--color-primary);}
+#printBtn{background:var(--color-secondary);color:#fff;border-color:var(--color-secondary);}
+nav#sectionNav{display:flex;gap:4px;overflow-x:auto;padding:6px 24px;background:#FAFAFA;border-bottom:1px solid var(--border);max-width:1500px;margin:0 auto;}
+nav#sectionNav a{white-space:nowrap;font-size:.76rem;padding:6px 10px;border-radius:7px;text-decoration:none;color:var(--color-muted);font-weight:600;}
+nav#sectionNav a:hover{background:#EEE;color:var(--color-primary);}
+
+main{max-width:1500px;margin:0 auto;padding:20px 24px 60px;}
+section.panel{background:var(--color-surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 26px;margin-bottom:22px;border:1px solid var(--border);}
+.grid{display:grid;gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1100px){.grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:700px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+.kpi-card{background:linear-gradient(145deg,#fff,#FAFAFA);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;}
+.kpi-label{font-size:.74rem;color:var(--color-muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.kpi-value{font-size:1.65rem;font-weight:800;color:var(--color-secondary);margin:4px 0;}
+.kpi-delta{font-size:.78rem;font-weight:700;}
+.kpi-delta.up{color:var(--color-positive);} .kpi-delta.down{color:var(--color-negative);}
+.kpi-source{font-size:.68rem;color:var(--color-muted);margin-top:6px;}
+
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--border);}
+th:first-child,td:first-child{text-align:left;}
+th{background:#FAFAFA;font-weight:700;color:var(--color-secondary);cursor:pointer;user-select:none;position:sticky;top:0;}
+th.sortasc::after{content:" \25B2";} th.sortdesc::after{content:" \25BC";}
+tr:hover td{background:#FBF5F6;}
+.table-scroll{overflow-x:auto;max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;}
+
+.chart-wrap{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px;}
+.chart-title{font-weight:700;font-size:.9rem;margin-bottom:2px;}
+.chart-meta{font-size:.72rem;color:var(--color-muted);margin-bottom:8px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:.72rem;margin-top:8px;}
+.legend-item{display:flex;align-items:center;gap:5px;}
+.legend-dot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.exec-only{} .tech-only{display:none;}
+body.tech-mode .exec-only{display:none;} body.tech-mode .tech-only{display:block;}
+.insight-item{border-left:4px solid var(--color-primary);padding:10px 14px;margin-bottom:10px;background:#FAFAFA;border-radius:0 8px 8px 0;}
+.insight-head{font-weight:700;font-size:.92rem;margin-bottom:3px;}
+details{margin:8px 0;border:1px solid var(--border);border-radius:8px;padding:6px 12px;background:#FAFAFA;}
+details summary{cursor:pointer;font-weight:600;font-size:.84rem;color:var(--color-primary);padding:4px 0;}
+details[open] summary{margin-bottom:6px;}
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.filter-bar input[type=text]{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.82rem;min-width:220px;}
+footer{text-align:center;padding:22px;font-size:.75rem;color:var(--color-muted);}
+.note{font-size:.76rem;color:var(--color-muted);font-style:italic;margin-top:6px;}
+.flex-between{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;}
+.lvl1{color:#1552B0;font-weight:700;} .lvl2{color:#1C6B3C;font-weight:700;} .lvl3{color:#9A5B00;font-weight:700;} .lvl4{color:#6425B5;font-weight:700;}
+@media print{
+  #topbar, nav#sectionNav, #printBtn, #controls, .no-print{display:none !important;}
+  body{background:#fff;}
+  section.panel{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+  .table-scroll{max-height:none;overflow:visible;}
+  main{padding:0;}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
+:focus-visible{outline:3px solid var(--color-accent);outline-offset:2px;}
+.mat-matrix{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,60px);gap:3px;}
+.mat-cell{display:flex;align-items:center;justify-content:center;font-size:.65rem;border-radius:4px;color:#fff;font-weight:700;text-align:center;padding:2px;}
+</style>
+</head>
+<body>
+<header id="topbar">
+  <div id="topbar-inner">
+    <div class="brand">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAVEAAABdCAIAAACTocLaAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAMbklEQVR4nO2d3W7jNhCF9SBFFyjS7q4tSnbSBove5KpAX2Cfp28uViE11JAcUqTkWHZ8PgjBbmCLv4ccDodM0wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAnwvdHHTTD01nnvEfrW5+2ztT4D7Qze9j/xmao27U+NN0oZb+8cveuQMRw3trteZRps3405qGBCBkFLNRdUv9ZOw8retI9FPRLDL+4/veWQaT2pWZ0rtxkjdPx573/1LjdXtnFtwK+r3nHEnnYs/hXWh8TnYs2DvjD48dfam1VPrpyOZXe2cZ7I9u3op7ztyFjOYxbewKrdhPZW2m9PR5yP7Robk9pXY+yQeaR+fZD2ObtWacLhS8k/3484+9sw92w5roUs9xK0HFfUPm9+O8cja/P+yd/QfGLMZUsWEWGml7Zx/sg54m+VjwPUm9s8bgEDrz7FjwtHcJHpWh+WpartyqDy388Q17FwLswNB8lzRv9XzMfFE3L2YsADthd1BWTfJuYYap/hFhWzy8P3Rwzt06GyZ5+4zfheYfEWkl32OhfuvYndWNmjdt/3LNPI/JmTDB6RlXhnEGdPMHrSGPtLBsF81Oju2+bAnKPVJblzMU3XignW0X+DD+pk+U+uA/X/TSZ0zNiKl/o3WZDZLhAXPfiosQ9xzr1h1b5y3KrcvPG8+w+U1QqJ9BoWz29JRVV2kLI8swFfDIIoWUnpyO7eN6E8zKSnTDVC3px9o8XS3PLKjLeYbe4wX0/AHrN3JrlhM9rperjG7HbsfCRdvoDV7qq/J/oOFD0VTp3u+9XLNuTcVs2XMKMmAW2EHNeJ8xzd2x8UWxpHnq70Fyi+ttyULsfF9d/NiWeskWqqfcBrXhtULKuhymTQHFytgn+sBDxgKSN2Wr5q+5YzdMm71n1pDPdrOXbQvZZo6dFB3FgVm9ef1GT7O6E4MYZNLRKNDTJ0ttHDNftQPlIbGtzXM46ZNK/exL9CVYOdPEe/Y/c2ym+T8uWpcomks9N6glVoWdn8ngebatwzIcFOpPWyi2lxQ3RGcGl9Besz5F+tY5Uca5hqkFjw+n/O3reSOeL9fMcOQ66sk0VRTduZjtjin/rSEDkgRZ6NHsXb/J59mOrTXZc12zY8NQ8MVTENZCNnDnf8Yat+4NpaFyFCE7fvE11RD1Pafno6Q035y1N7GLubVhf8+senkUaXkZXQvapvkpFvMTouvC72TNXzPDCXdxK6mipMmVbx2s2L/o8wcQhubHwJJb+341hL8v0XzHVhBr4i/cckZsiA/QvGvKTG690F0T/CuOiUFBMsGCPdXSY3gfrQG5Ya9O7hAfmeFY8ypqUfGAR6YIcScT35B6iTUZfsS5pRjHwujUVELi10s0L363qmiK4qzDJUxa86n3T7ZVVvNBhuWDOqa2f2cvyZdx9gtkaviBdhnXzpCuptpyT/iFMixqfu6g3B7mziSyllN9lP+3j77ODWx5kS/2GJ3LLT+nGKTlcpuRYqHmgxT7ICHyZqt0/VjZh+HxoubT3ruWReC90hsyvqRUK7gw3pdmXvbLcUHspxrIHKNfxrbPZOR/TLe9HMbJfKI9iWmzR9fk2zquNsThKb77sog5ZX1gOyiTHmrekFJRR83W0TPWzCtb7S8ajYqODLoedh7fMDRP5h+z+KWX2KSf/Kz+ZXQoh6Mz3/LRZPXJ7kFSa9p+GXfodZq340tHVdHb7S5TtAMTQzwCchUF2wRxt+npPXKeyV3yRm9IaZ5H7/bUCq+072B1fjB9KV6Z2q3HLmOou/X/EJa0uj9fGzdwkuvCzRtuE7LoZhs2dtY+FSdqNRuztZdnVeIGY7mVNT8UvIfM1Iydv3DG04hEPJ7Q6+i71KtiM1KVTCnDvLgVhVGuebdeXViF2b3bxFrPmuVe6RKa/zefCnuDbNsXLhilZWmF4WlGjcC0ue1DvsM0Jp2llUzPnK5jtS7cbDNMU/2Kc3Xt4s683S5a2kI7lTeV6MPTU9TNsg+GiimeDGnFeBgpD7KhMYSb4fIkH4hnKcMpy6J0PT9UhhLQoBzPgd44ldB80s+fSEg0y5c3z3TzXzTJd3lnqpSBs1S3NxlXqhOrqUj8QRjJOfVCGi8rPHnDkk1Ok4bbkc6PKXYGXpZc2m9failowaizEiq3NcSp/hRIQhoaeqPMurDFYdoQXbFXZ2VQ7Y5OqLH7eM33hTMt2eF9VFi7gP+++OjZIj4FRaitrmtgV331O71T2FP8QmOyqpqpPncrpll6KTK9CneJ7FJzOZ4voXlV3lTDVHs5xeaRzEJF1u+BPiPMz4uBLonkvmzTfLWxyl0tmUHtwzS/PPRrqREDr23B41aaN6/5Jd91RlfO5o/DmPoCFxdvGNkAozlQrdgTLplpU5ovN8noUqBYQlUGcNzjT9z2SYWjlwe0O7S8+CrU/JoF6tD8I7nHrLmRqYFLaX5ZdXSGQt5DqXmEvl1bXddAr9Q8V77bwJhdzeTwzL82eUDaDbSrg3yuo/mElbRd856kTRJnqUNXb21eX/OJAp64W3tvzZ+iwl7kec/Piur6cGgjZ0uBve2ipTAJ/i3BV28u3milPc/qp6Ds96L51Dxf5CaMMnxVzdPhK1HzizVwHc2npr1MtH/J83yz87xona5TfufWw3Y5nX6zHSaO/M8S2KUm9chNY1DhQu6ONB95CleGLbId2RWaL/KSRCl+T1RRxz6zp+bFbVcXQLHhuXaMWQWJfaDVD7+xUJxVOpLWC8tDuxQ3UpGBwu5yP5pvE316/PlfeULNNLCu17yuN1alActm/sg+s6/m4yOhdoV/vascrs2GiytLlO921N3vlelSB0r9By3dtxrzvLFLdq3vRfP20g4xOrVqB5hfGlGveRcEVbGgYIZbTo17a/5nvHr65DHzZnctEyC9+vHinOm/cxiJiYU40n7+pVL3drmWCn4fmqfPpOLMevFMjp/Phnab5YVrieYpxbZQD2nDLWyjfTXf5FZP1fEIxmo4rfvuVdGy9Xgp5XdO/05OA5s3LphW1V/FuSvNp9wuzoFiyz7f2KMnA0H5VS1aUnXx9s5fa6TyldvAdDWQIstODFIMd1V213ziqAg/OLBwrcMw3S8wnzi+3cW8Y5hCyj5C9i6Mx160MoX3p28yWC34inCa5q4038zdWhatC4xlglQsHiZf1bXn6qZoSJeWpogUF6OSTlE8QbSz5ps5pFIIP2cVq6iMbt165LWt55Bw66L+qzD13dDzuvqCap92kt1soOdl3gWHmKJLZgLuTfOv4qrer+1guyiOU04eevHTStr2kvjjRFODhbVWwsq5Dc0fyJktlvrkD6xuaHPVHn+xwuTcE1rYbJ+B3TygRP9ndDPk6oTmkbi+sPek+cYblFfHUM0zc63mN6/FTikR3oLmTfX+WlC9i+F3QXmTJ1NuCHfd56q+xa2+5SsB2Wmk8nB6r11p6F3jL7k7zTdTjWUu7ci1CzVKKOaa/Xnxiojy1OVmuhHNN9Pd59t3kbj3+rY9eQ7jUe/Ix+7UKFYBl6u7qiUZQi9iErJHTdrghdnk3MyzslqtncnSciZD+am4b8MUGMsH/udat4K5s5W/wQ6F8hXAdMpQ+V/JNQ13ths9xxmO772NNf8+a5FfMHM5VJy6Sg1h+Rqo0byKCnVeHRXjX4vSZ4vJW4GrwFvP3g0mDNZd5ekGP2/ZNkw3aii6fblu/9ZP7gfVNd/SD1IMQp2qD5lw2CAVPKUbs+6OFP/rYz4rutow7bd5GVg8X+yClP3eOdeVNViYg/2JvtjGGS6b5+fY2+gPPASpu1HGOmsXrB6xBsxL/q6pwy6qw/Hn8/KXJei2cs97R/6R0HPBWmHqlnd/ByYzVI7Mddmy3tNd8O8E6mlram5CP8Xl2zUKGZpfKGSAP+fy4Vk3P+m+d/6G5T+N4r/kvWvyN+ip35R8t6G/bDF7laizHs3R7nAINrtrQYafgyotjLeni2JbSs6JrSW1F10OZTa64hooCqyinKigUOa/X7ffTkVXjCmaulvWIRXTxaeO4QGfnsueqwMA3DrQPACPBTQPwGMBzQPwWEDzADwWZjOiiyIX6o4zAADuBrbxxp87iSQFANRiL7RyfxSMAjGOdx9qAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8dv4HBF7rgeD2x3AAAAAASUVORK5CYII=" alt="Logotipo Mapfre">
+      <div>
+        <div class="brand-text">Dashboard SFCR — Grupo Mapfre</div>
+        <div class="brand-sub">Informe sobre la Situación Financiera y de Solvencia · Ejercicio 31/12/2025 · Cifras en millones de euros (M€) salvo indicación contraria</div>
+      </div>
+    </div>
+    <div id="controls">
+      <select id="yearSelect" aria-label="Seleccionar ejercicio de referencia">
+        <option value="2025" selected>Ejercicio 2025</option>
+        <option value="2024">Ejercicio 2024 (comparativo)</option>
+      </select>
+      <button id="viewToggle" class="toggle-btn" aria-pressed="false">Vista: Ejecutiva ⇄ Técnica</button>
+      <button id="printBtn">🖨️ Imprimir / Guardar PDF</button>
+    </div>
+  </div>
+  <nav id="sectionNav" aria-label="Navegación por secciones">
+    <a href="#s-portada">Portada</a>
+    <a href="#s-resumen">Resumen ejecutivo</a>
+    <a href="#s-magnitudes">Magnitudes</a>
+    <a href="#s-negocio">Perfil negocio</a>
+    <a href="#s-pasivos">Pasivos SII</a>
+    <a href="#s-pt">Descomposición PT</a>
+    <a href="#s-lob">LoB</a>
+    <a href="#s-metodologias">Metodologías</a>
+    <a href="#s-reaseguro">Reaseguro</a>
+    <a href="#s-evolucion">Evolución</a>
+    <a href="#s-capital">Riesgo y capital</a>
+    <a href="#s-insights">Insights</a>
+    <a href="#s-trazabilidad">Trazabilidad</a>
+    <a href="#s-limitaciones">Limitaciones</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ================= 1. PORTADA ================= -->
+<section class="panel" id="s-portada">
+  <div class="flex-between">
+    <div>
+      <h1>Informe sobre la Situación Financiera y de Solvencia<br>Grupo Mapfre</h1>
+      <p class="small">Dashboard ejecutivo y técnico generado a partir del SFCR consolidado del Grupo · Ejercicio cerrado a 31 de diciembre de 2025 (comparativo 2024)</p>
+    </div>
+  </div>
+  <div class="grid grid-4" style="margin-top:14px;">
+    <div class="kpi-card"><div class="kpi-label">Entidad informante</div><div class="kpi-value" style="font-size:1.1rem;">Mapfre, S.A. y sociedades dependientes</div><div class="kpi-source">Grupo consolidado · S.A. cotizada</div></div>
+    <div class="kpi-card"><div class="kpi-label">Supervisor principal</div><div class="kpi-value" style="font-size:1.1rem;">DGSFP (España)</div><div class="kpi-source">Adicionalmente CNMV por cotización</div></div>
+    <div class="kpi-card"><div class="kpi-label">Perímetro / Países</div><div class="kpi-value">37 países</div><div class="kpi-source">Principales: España, Brasil, EE.UU., México</div></div>
+    <div class="kpi-card"><div class="kpi-label">Auditor externo</div><div class="kpi-value" style="font-size:1.1rem;">KPMG Auditores S.L.</div><div class="kpi-source">Informe sin salvedades · 11/02/2026</div></div>
+  </div>
+  <p class="note" style="margin-top:14px;">Fuente única de datos: Informe SFCR 2025 Grupo Mapfre (documento cargado por el usuario). No se ha empleado información externa ni benchmarking. Documento con texto nativo (no escaneado), íntegramente legible, 115 páginas de cuerpo + Anexo I de filiales. Moneda: EUR. Unidad: millones de euros (M€) salvo donde se indique % o datos por acción.</p>
+</section>
+
+<!-- ================= 2. RESUMEN EJECUTIVO ================= -->
+<section class="panel" id="s-resumen">
+  <h2>Resumen Ejecutivo</h2>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-dato">DATO PUBLICADO</span> Solvencia robusta y estable</div>
+    <p>El ratio de solvencia del Grupo se sitúa en <b>205,3%</b> a 31/12/2025 (207,4% en 2024), con Fondos Propios admisibles de <b>10.580,5 M€</b> frente a un SCR de <b>5.154,5 M€</b>. El ratio se mantiene dentro de la zona verde del Apetito de Riesgo (175%-225%). <span class="small">Fuente: Resumen Ejecutivo pág.8; E.1.2 pág.103.</span></p>
+  </div>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-dato">DATO PUBLICADO</span> Crecimiento de negocio y mejora de rentabilidad técnica</div>
+    <p>Las primas imputadas netas consolidadas alcanzan <b>23.726,0 M€</b> (+6,9% vs 2024), con un ratio combinado de No Vida que mejora a <b>90,2%</b> (93,0% en 2024). El beneficio atribuible crece un 17,1% hasta <b>1.132,6 M€</b>. <span class="small">Fuente: A.2 pág.17; Resumen Ejecutivo pág.4.</span></p>
+  </div>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-dato">DATO PUBLICADO</span> Diversificación geográfica y de negocio como mitigante estructural</div>
+    <p>El Grupo opera en 37 países con 4 Unidades de Negocio (Seguros, Reaseguro, Global Risks, MAWDY). El peso de No Vida es del 71,0% sobre primas netas (estable vs 2024); los riesgos de Mercado y Suscripción No Vida concentran el 78,5% del SCR. <span class="small">Fuente: A.1.1 pág.11; C pág.49.</span></p>
+  </div>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-calc">CÁLCULO DERIVADO</span> Brecha entre valoración contable IFRS 17 y Solvencia II en provisiones técnicas</div>
+    <p>Las Provisiones Técnicas bajo SII (32.222,1 M€) son <b>8.314,0 M€ inferiores</b> a las calculadas bajo normativa contable CCAA/IFRS 17 (40.536,1 M€), explicado principalmente por el CSM no reconocido en SII y las diferencias de descuento financiero y margen de riesgo. <span class="small">Fuente: D.2 pág.82-83 (cálculo: 40.536,1 − 32.222,1).</span></p>
+  </div>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-dato">DATO PUBLICADO</span> Uso de medidas de garantías a largo plazo (LTG) con impacto material si se retiran</div>
+    <p>El Grupo aplica ajuste por casamiento y por volatilidad; la medida transitoria sobre PT está valorada a <b>cero</b> por requerimiento de la DGSFP. Sin ese límite, el ratio de solvencia aumentaría <b>+6,1 p.p.</b> (de 205,3% a 211,4%). <span class="small">Fuente: D.2.2, pág.89-90; Resumen Ejecutivo pág.9.</span></p>
+  </div>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-interp">INTERPRETACIÓN</span> Sensibilidad relevante a spreads de crédito y tasas libres de riesgo</div>
+    <p>El escenario de mayor impacto negativo en el ratio de solvencia es el incremento conjunto de diferenciales corporativos y soberanos en 50 p.b. (−6,8 p.p., hasta 198,5%), seguido de la subida de tipos de interés en 100 p.b. (−2,8 p.p.). Estos resultados sugieren una exposición significativa, aunque dentro de la tolerancia, al riesgo de mercado de renta fija. <span class="small">Fuente: C.7.1 pág.71.</span></p>
+  </div>
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-limit">LIMITACIÓN</span> Ausencia de QRT nativos adjuntos como ficheros independientes</div>
+    <p>El informe no incorpora las plantillas QRT oficiales (XBRL) como anexos separados; las cifras citadas como "Plantilla S.XX.XX" se han extraído de las tablas narrativas del cuerpo del informe. Se mantiene la jerarquía de fiabilidad declarando Nivel 1 cuando el documento cita expresamente el código de plantilla EIOPA. <span class="small">Ver sección Limitaciones y discrepancias.</span></p>
+  </div>
+  <p class="note">Las magnitudes de este resumen se detallan con trazabilidad completa (página, sección, nivel de fiabilidad) en las secciones siguientes y en la tabla de Trazabilidad.</p>
+</section>
+
+<!-- ================= 3. MAGNITUDES CLAVE ================= -->
+<section class="panel" id="s-magnitudes">
+  <h2>Magnitudes Clave 2025</h2>
+  <div class="grid grid-4" id="kpiGrid"></div>
+  <p class="note">Las variaciones (Δ%) se calculan sobre los valores publicados 2024 cuando están disponibles explícitamente en el documento. <span class="tag tag-dato">DATO PUBLICADO</span> salvo donde se indique lo contrario en la fuente.</p>
+</section>
+
+<!-- ================= 4. PERFIL DEL NEGOCIO ================= -->
+<section class="panel" id="s-negocio">
+  <h2>Perfil del Negocio</h2>
+  <div class="grid grid-3">
+    <div class="chart-wrap">
+      <div class="chart-title">Ingresos del servicio de seguro por área/unidad de negocio</div>
+      <div class="chart-meta">M€ · Ejercicio 2025 vs 2024 · Fuente: E.1.4, pág.106</div>
+      <div id="chartArea"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Resultado atribuible por área/unidad de negocio</div>
+      <div class="chart-meta">M€ · 2025 · Fuente: E.1.4, pág.107</div>
+      <div id="chartResultadoArea"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Primas netas imputadas: No Vida vs Vida</div>
+      <div class="chart-meta">% sobre total Grupo · 2025 (idéntico a 2024: 71,0% / 29,0%) · Fuente: A.2, pág.17</div>
+      <div id="chartNoVidaVida"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:20px;">Particularidades del modelo de negocio y su transmisión a los pasivos</h3>
+
+  <details open><summary>1. Elevada diversificación geográfica (37 países) con exposición material a economías hiperinflacionarias y volátiles</summary>
+    <p><span class="tag tag-dato">DATO PUBLICADO</span> El Grupo reexpresó estados financieros de filiales en Venezuela, Argentina y Turquía por hiperinflación (impacto −42,3 M€ en resultado 2025); la subida del salario mínimo en Colombia (+23%) generó un impacto neto de −57 M€, principalmente en rentas vitalicias de Vida. <span class="tag tag-interp">INTERPRETACIÓN</span> Esta exposición multigeográfica introduce heterogeneidad en las hipótesis económicas (tipos de interés, inflación, tipo de cambio) empleadas en el cálculo de la Mejor Estimación por entidad individual, incrementando la complejidad de la agregación a nivel Grupo. <span class="tag tag-reco">RECOMENDACIÓN</span> Evaluar la sensibilidad de la MBE de Vida (rentas) a escenarios adicionales de inflación salarial en LATAM. <br><span class="small">Fuente: A.1.2 pág.12.</span></p>
+  </details>
+
+  <details><summary>2. Dualidad Vida/No Vida con predominio No Vida (71,0%) pero concentración de PT en Vida</summary>
+    <p><span class="tag tag-dato">DATO PUBLICADO</span> Pese a que No Vida representa el 71,0% de las primas netas, las Provisiones Técnicas de Vida (excl. UL) ascienden a 16.030,9 M€ frente a 12.892,8 M€ de No Vida — es decir, Vida concentra el 55,6% del total de PT SII. <span class="tag tag-interp">INTERPRETACIÓN</span> Esta asimetría refleja la naturaleza de cola larga y capitalización de los compromisos de Vida/Ahorro, que generan pasivos de muy largo plazo pese a representar menor proporción de primas anuales. <span class="tag tag-reco">RECOMENDACIÓN</span> Mantener seguimiento específico sobre riesgo de longevidad (modelo interno parcial) y riesgo de tipo de interés en carteras de ahorro con PB. <br><span class="small">Fuente: D.2 pág.82-83; A.2 pág.17 (cálculo derivado: 16.030,9/(16.030,9+12.892,8)=55,4%).</span></p>
+  </details>
+
+  <details><summary>3. Uso de modelo interno parcial de longevidad (único caso) en Mapfre Vida España</summary>
+    <p><span class="tag tag-dato">DATO PUBLICADO</span> El Grupo aplica fórmula estándar para todos los riesgos excepto el subriesgo de longevidad en Mapfre Vida (España), calculado con modelo interno parcial aprobado por la DGSFP, basado en simulación Montecarlo sobre tablas de mortalidad españolas. <span class="tag tag-interp">INTERPRETACIÓN</span> Esto sugiere que la cartera española de rentas/seguros de supervivencia tiene suficiente materialidad y datos históricos para justificar un modelo propio, mejorando la precisión frente al escenario único de −20% de mortalidad de la fórmula estándar. <span class="tag tag-reco">RECOMENDACIÓN</span> Solicitar el detalle de validación (back-testing) del modelo interno para la función actuarial y auditoría interna. <br><span class="small">Fuente: E.4, pág.112-113.</span></p>
+  </details>
+
+  <details><summary>4. Dependencia estructural de Mapfre Re para gestión de riesgo catastrófico y reaseguro intragrupo</summary>
+    <p><span class="tag tag-dato">DATO PUBLICADO</span> Mapfre Re concentra las Unidades de Reaseguro y Global Risks, asesorando técnicamente a las entidades del Grupo en estructuración de cesiones; el 10,4% de las PT SII están cedidas en reaseguro. <span class="tag tag-interp">INTERPRETACIÓN</span> La centralización del reaseguro en una entidad del propio Grupo introduce riesgo de concentración de contraparte intragrupo, mitigado por la eliminación de operaciones intragrupo en el cálculo de la mejor estimación consolidada. <span class="tag tag-reco">RECOMENDACIÓN</span> Verificar métricas de riesgo de contraparte intragrupo tras eliminaciones (no desagregadas explícitamente en el informe). <br><span class="small">Fuente: C.1 pág.51; D.2.1 pág.84.</span></p>
+  </details>
+
+  <details><summary>5. Perímetro de consolidación SII diferente al contable (método 2 para EE.UU., México y Brasil)</summary>
+    <p><span class="tag tag-dato">DATO PUBLICADO</span> Las entidades aseguradoras de EE.UU., México y Brasil (países equivalentes) se consolidan por el método de deducción y agregación (Método 2), mientras que contablemente se integran globalmente. Las entidades excluidas representan ~2,0% del activo total contable. <span class="tag tag-interp">INTERPRETACIÓN</span> Esta dualidad de perímetros explica gran parte de las diferencias entre "Valor Contable CCAA" y "Valor Contable Ajustado" en los balances presentados en la sección D, y debe tenerse en cuenta al comparar cifras entre ambas normativas. <span class="tag tag-reco">RECOMENDACIÓN</span> Para análisis de pasivos por país, solicitar desagregación específica del SCR de las empresas Método 2 (781,8 M€ reportado de forma agregada). <br><span class="small">Fuente: D pág.73; E.2.1 pág.110.</span></p>
+  </details>
+
+  <details><summary>6. Garantías financieras y opciones implícitas en productos de ahorro con participación en beneficios (PB)</summary>
+    <p><span class="tag tag-dato">DATO PUBLICADO</span> La cartera de seguros con PB (5.780,0 M€ de PT) incluye garantías de tipo "put" financiero valoradas con métodos estocásticos (Montecarlo, calibrados con swaptions). El Grupo también utiliza la medida transitoria sobre PT desde 2016 (actualmente valorada a cero por límite normativo DGSFP) específicamente para estos productos. <span class="tag tag-interp">INTERPRETACIÓN</span> La combinación de garantías financieras a largo plazo y el uso histórico de medidas transitorias indica una cartera de ahorro con compromisos de rentabilidad mínima sensible al entorno de tipos de interés bajos. <span class="tag tag-reco">RECOMENDACIÓN</span> Dar seguimiento a la evolución del límite transitorio DGSFP, dado que su eliminación total añadiría +6,1 p.p. al ratio de solvencia. <br><span class="small">Fuente: D.2.1 pág.85; D.2.2.d pág.90.</span></p>
+  </details>
+
+  <p class="note">Particularidades seleccionadas por su materialidad declarada en el documento; no se han inferido magnitudes no publicadas.</p>
+</section>
+
+<!-- ================= 5. PASIVOS SII (BALANCE) ================= -->
+<section class="panel" id="s-pasivos">
+  <h2>Pasivos bajo Solvencia II — Balance Económico</h2>
+  <div class="grid grid-4">
+    <div class="kpi-card"><div class="kpi-label">Total Activos SII 2025</div><div class="kpi-value">51.917,0 M€</div><div class="kpi-delta up">+5,3% vs 2024</div><div class="kpi-source">D.1 / D.6.A, pág.76 · <span class="badge badge-verificado">Verificado</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Pasivos SII 2025</div><div class="kpi-value">41.984,8 M€</div><div class="kpi-delta up">+4,8% vs 2024</div><div class="kpi-source">D.3 / D.6.C, pág.91 · <span class="badge badge-verificado">Verificado</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">Exceso Activos s/ Pasivos (SII)</div><div class="kpi-value">9.932,2 M€</div><div class="kpi-delta up">+7,6% vs 2024</div><div class="kpi-source">D.6.C, pág.96 · <span class="badge badge-verificado">Verificado</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Provisiones Técnicas (SII)</div><div class="kpi-value">32.222,1 M€</div><div class="kpi-source">D.2, pág.82-83 · <span class="badge badge-verificado">Verificado</span> (base QRT S.02.01)</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:18px;">
+    <div class="chart-wrap">
+      <div class="chart-title">Composición del Activo bajo Solvencia II 2025 (principales partidas)</div>
+      <div class="chart-meta">M€ · Fuente: D.1, pág.75-76</div>
+      <div id="chartActivos"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Composición del Pasivo bajo Solvencia II 2025 (principales partidas)</div>
+      <div class="chart-meta">M€ · Fuente: D.3, pág.91</div>
+      <div id="chartPasivos"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:20px;">Comparativa de valoración: Solvencia II vs Contable Ajustado vs Contable CCAA</h3>
+  <div class="table-scroll">
+    <table id="tableBalanceComp"><thead><tr><th>Partida</th><th>Valor Solvencia II</th><th>Valor Contable Ajustado</th><th>Valor Contable CCAA</th></tr></thead><tbody></tbody></table>
+  </div>
+  <p class="note"><span class="tag tag-limit">LIMITACIÓN</span> "Valor Contable Ajustado" refleja criterios NIIF con el perímetro de consolidación de Solvencia II; "Valor Contable CCAA" refleja las cuentas anuales consolidadas oficiales bajo NIIF-UE (perímetro contable íntegro). Las diferencias no deben interpretarse como error sino como consecuencia de diferencias normativas y de perímetro explicadas en D.1-D.3.</p>
+
+  <details>
+    <summary>Ver conciliación Patrimonio Neto NIIF ↔ Excedente de Activos sobre Pasivos SII (E.1.2, pág.104)</summary>
+    <div class="table-scroll"><table id="tableConciliacion"><thead><tr><th>Concepto</th><th>2025 (M€)</th><th>2024 (M€)</th></tr></thead><tbody></tbody></table></div>
+    <p class="note"><span class="tag tag-calc">CÁLCULO DERIVADO</span> El Excedente SII (9.932,2 M€) es un 5,5% inferior al Patrimonio Neto NIIF en cuentas anuales (10.514,2 M€), diferencia explicada principalmente por el ajuste de perímetro de consolidación (−832,3 M€) y por las valoraciones específicas de fondo de comercio, intangibles, inversiones y provisiones técnicas.</p>
+  </details>
+</section>
+
+<!-- ================= 6. DESCOMPOSICIÓN DE PROVISIONES TÉCNICAS ================= -->
+<section class="panel" id="s-pt">
+  <h2>Descomposición de Provisiones Técnicas (Mejor Estimación + Margen de Riesgo)</h2>
+  <div class="grid grid-3">
+    <div class="kpi-card"><div class="kpi-label">PT No Vida (SII)</div><div class="kpi-value">12.892,8 M€</div><div class="kpi-source">MBE 12.048,2 + RM 358,0 (excl. enfermedad) + Enf. 486,7 · pág.82</div></div>
+    <div class="kpi-card"><div class="kpi-label">PT Vida excl. UL (SII)</div><div class="kpi-value">16.030,9 M€</div><div class="kpi-source">MBE 15.397,8 + RM 313,6 + Enf.vida 319,6 · pág.82</div></div>
+    <div class="kpi-card"><div class="kpi-label">PT Unit-Linked (SII)</div><div class="kpi-value">3.298,4 M€</div><div class="kpi-source">"Como un todo" 3.360,7 + MBE (−68,2) + RM 6,0 · pág.83</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:18px;">
+    <div class="chart-wrap">
+      <div class="chart-title">Waterfall: de Mejor Estimación a Provisión Técnica Total (Grupo)</div>
+      <div class="chart-meta">M€ · 2025 · Fuente: D.2, pág.82-83 (suma de componentes, <span class="tag tag-calc" style="font-size:.6rem;">CÁLCULO DERIVADO</span>)</div>
+      <div id="chartWaterfallPT"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">PT por segmento: Mejor Estimación vs Margen de Riesgo</div>
+      <div class="chart-meta">M€ · 2025 · Fuente: D.2, pág.82</div>
+      <div id="chartPTSegmento"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:20px;">Metodología de cálculo del Margen de Riesgo</h3>
+  <p><span class="tag tag-dato">DATO PUBLICADO</span> Tasa de coste de capital: <b>6%</b> (fijada por normativa SII). El Grupo utiliza simplificaciones de <b>Nivel 1 y Nivel 2</b> (de las 4 posibles) según la entidad. El SCR nocional para el cálculo del margen de riesgo incorpora, cuando aplica, el modelo interno parcial de longevidad. <span class="small">Fuente: D.2.1, pág.86-87.</span></p>
+
+  <details><summary>Ver tabla completa: Provisiones Técnicas por Línea de Negocio (20 LoB)</summary>
+    <div class="table-scroll">
+      <table id="tablePTLoB"><thead><tr><th>Línea de negocio</th><th>Ramo</th><th>Mejor Estimación</th><th>Margen Riesgo</th><th>Como un todo</th><th>PT Total</th></tr></thead><tbody></tbody></table>
+    </div>
+    <p class="note">Fuente: D.2, pág.83, desglose explícito por LoB bajo Solvencia II. Cifras en M€. <span class="badge badge-verificado">Verificado</span></p>
+  </details>
+
+  <details>
+    <summary>Impacto de medidas de garantías a largo plazo (LTG) sobre PT, Fondos Propios y SCR</summary>
+    <div class="table-scroll"><table id="tableLTG"><thead><tr><th>Medida</th><th>Impacto en PT</th><th>Impacto en SCR / Fondos Propios</th></tr></thead><tbody></tbody></table></div>
+    <p class="note">Fuente: D.2.2, pág.89-90, Plantilla S.22.01.22. <span class="badge badge-verificado">Verificado</span></p>
+  </details>
+</section>
+
+<!-- ================= 7. ANÁLISIS POR LoB (interactivo) ================= -->
+<section class="panel" id="s-lob">
+  <h2>Análisis por Línea de Negocio (LoB) — Primas, Siniestralidad y Gastos</h2>
+  <div class="filter-bar">
+    <input type="text" id="lobFilter" placeholder="Filtrar por nombre de línea de negocio..." aria-label="Filtrar líneas de negocio">
+    <select id="lobRamoFilter" aria-label="Filtrar por ramo">
+      <option value="">Todos los ramos</option>
+      <option value="No Vida">No Vida</option>
+      <option value="Vida">Vida</option>
+    </select>
+    <span class="small">Clic en encabezados de columna para ordenar.</span>
+  </div>
+  <div class="table-scroll">
+    <table id="tableLoBPrimas"><thead><tr>
+      <th data-key="lob">Línea de negocio</th><th data-key="ramo">Ramo</th>
+      <th data-key="p25">Primas netas 2025</th><th data-key="p24">Primas netas 2024</th><th data-key="var">Δ%</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+  <p class="note">Fuente: A.2, Plantilla S.05.01.02, pág.13-16. Primas imputadas netas de reaseguro. <span class="badge badge-verificado">Verificado</span>. No se incluyen líneas de negocio donde el Grupo no opera (ya eliminadas por el emisor).</p>
+
+  <h3 style="margin-top:20px;">Distribución geográfica de primas (6 principales países + origen)</h3>
+  <div class="grid grid-2">
+    <div class="chart-wrap">
+      <div class="chart-title">No Vida: primas netas imputadas por país</div>
+      <div class="chart-meta">M€ · 2025 vs 2024 · Fuente: A.2, pág.18-19 (S.05.02.04)</div>
+      <div id="chartGeoNoVida"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Vida: primas netas imputadas por país</div>
+      <div class="chart-meta">M€ · 2025 vs 2024 · Fuente: A.2, pág.20-21 (S.05.02.04)</div>
+      <div id="chartGeoVida"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 8. METODOLOGÍAS E HIPÓTESIS ================= -->
+<section class="panel tech-only" id="s-metodologias">
+  <h2>Metodologías Actuariales e Hipótesis</h2>
+
+  <div class="grid grid-2">
+    <div>
+      <h3>Seguros de Vida</h3>
+      <ul>
+        <li>Cálculo póliza a póliza del valor actual esperado (mortalidad, longevidad, invalidez).</li>
+        <li>Proyecciones mediante <i>model points</i> cuando el cálculo póliza a póliza es desproporcionado.</li>
+        <li>Cálculos estocásticos (Montecarlo) para opciones y garantías financieras (tipo "put").</li>
+      </ul>
+      <p class="small">Fuente: D.2.1, pág.86.</p>
+    </div>
+    <div>
+      <h3>Seguros de No Vida</h3>
+      <ul>
+        <li>Métodos deterministas para desarrollo de siniestralidad última (factores de frecuencia/coste medio).</li>
+        <li>Métodos estocásticos con función de distribución de probabilidad.</li>
+        <li>Separación entre Provisión de Siniestros Pendientes y Provisión de Primas.</li>
+      </ul>
+      <p class="small">Fuente: D.2.1, pág.86, 88.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:16px;">Hipótesis económicas y no económicas</h3>
+  <div class="grid grid-2">
+    <div class="chart-wrap">
+      <b>Económicas</b>
+      <ul class="small">
+        <li>Estructura temporal de tipos de interés sin riesgo por moneda</li>
+        <li>Tipos de cambio</li>
+        <li>Evolución de mercados y variables financieras</li>
+      </ul>
+    </div>
+    <div class="chart-wrap">
+      <b>No económicas</b>
+      <ul class="small">
+        <li>Gastos realistas (administración, inversión, adquisición)</li>
+        <li>Caídas de cartera y rescates</li>
+        <li>Mortalidad y longevidad (tablas de 2º orden, best estimate, sin recargos)</li>
+        <li>Invalidez y otros riesgos biométricos</li>
+      </ul>
+    </div>
+  </div>
+  <p class="note"><span class="tag tag-dato">DATO PUBLICADO</span> Las tablas biométricas se basan en archivos históricos propios + datos externos complementarios; se excluye la experiencia atípica de COVID-19 si tiene carácter no recurrente. <span class="small">Fuente: D.2.1, pág.88-89.</span></p>
+
+  <h3 style="margin-top:16px;">Paquete de Medidas de Garantías a Largo Plazo (LTG) aplicadas</h3>
+  <div class="grid grid-4">
+    <div class="kpi-card"><div class="kpi-label">Ajuste por Casamiento</div><div class="kpi-value" style="font-size:1.1rem;">Aplicado</div><div class="kpi-source">Impacto en PT si se retira: +143,6 M€</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ajuste por Volatilidad</div><div class="kpi-value" style="font-size:1.1rem;">14 p.b. (EUR)</div><div class="kpi-source">Impacto en PT si se retira: +35,2 M€</div></div>
+    <div class="kpi-card"><div class="kpi-label">Estructura transitoria tipos</div><div class="kpi-value" style="font-size:1.1rem;">No utilizada</div><div class="kpi-source">D.2.2.c, pág.90</div></div>
+    <div class="kpi-card"><div class="kpi-label">Deducción transitoria PT</div><div class="kpi-value" style="font-size:1.1rem;">Valorada a 0</div><div class="kpi-source">Por límite DGSFP; potencial −418,3 M€ en PT</div></div>
+  </div>
+
+  <h3 style="margin-top:16px;">Nivel de incertidumbre asociado a las Provisiones Técnicas</h3>
+  <table style="margin-top:8px;">
+    <thead><tr><th>Fuente de incertidumbre</th><th>Clasificación</th><th>Comentario</th></tr></thead>
+    <tbody>
+      <tr><td>Riesgo biométrico (mortalidad/longevidad)</td><td style="text-align:left;"><span class="badge badge-calculado">Relevante</span></td><td style="text-align:left;" class="small">Mitigado por modelo interno parcial en Vida España; tablas 2º orden sin recargo.</td></tr>
+      <tr><td>Desarrollo de siniestralidad No Vida (IBNR)</td><td style="text-align:left;"><span class="badge badge-calculado">Relevante</span></td><td style="text-align:left;" class="small">Sin desagregación de triángulos en el informe (ver Limitaciones).</td></tr>
+      <tr><td>Recuperabilidad del reaseguro</td><td style="text-align:left;"><span class="badge badge-verificado">Moderado</span></td><td style="text-align:left;" class="small">Mitigado por calidad crediticia mínima "Alto" de reaseguradores.</td></tr>
+      <tr><td>Hipótesis económicas (tipos, inflación)</td><td style="text-align:left;"><span class="badge badge-calculado">Relevante</span></td><td style="text-align:left;" class="small">Sensibilidad cuantificada en C.7.1 (hasta −6,8 p.p. en ratio de solvencia).</td></tr>
+      <tr><td>Opciones y garantías financieras (PB)</td><td style="text-align:left;"><span class="badge badge-calculado">Relevante</span></td><td style="text-align:left;" class="small">Valoradas con métodos estocásticos; calibradas a precios de mercado observables.</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Clasificación propia [INTERPRETACIÓN] basada en declaraciones cualitativas del documento; no constituye una métrica cuantitativa adicional no publicada.</p>
+</section>
+
+<!-- ================= 9. REASEGURO ================= -->
+<section class="panel" id="s-reaseguro">
+  <h2>Reaseguro</h2>
+  <div class="grid grid-4">
+    <div class="kpi-card"><div class="kpi-label">% PT cedidas en reaseguro</div><div class="kpi-value">10,4%</div><div class="kpi-source">C.1, pág.51 · <span class="badge badge-verificado">Verificado</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">Recuperables de reaseguro SII 2025</div><div class="kpi-value">3.347,3 M€</div><div class="kpi-delta up">+13,9% vs 2024</div><div class="kpi-source">D.6.A, pág.94</div></div>
+    <div class="kpi-card"><div class="kpi-label">Recuperables No Vida</div><div class="kpi-value">3.310,0 M€</div><div class="kpi-source">98,9% del total recuperable · pág.76</div></div>
+    <div class="kpi-card"><div class="kpi-label">Calidad crediticia mínima exigida</div><div class="kpi-value" style="font-size:1.2rem;">"Alto" (CQ2)</div><div class="kpi-source">C.3, pág.55</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="chart-wrap">
+      <div class="chart-title">Importes recuperables de reaseguro por segmento</div>
+      <div class="chart-meta">M€ · 2025 · Fuente: D.1, pág.76</div>
+      <div id="chartReaseguro"></div>
+    </div>
+    <div>
+      <h3>Estructura y gestión</h3>
+      <p class="small"><span class="tag tag-dato">DATO PUBLICADO</span> <b>Mapfre Re</b> (Unidades de Reaseguro y Global Risks) asesora técnicamente a las entidades del Grupo en el diseño de cesiones; cada entidad define sus necesidades y las comunica a Mapfre Re para estructurar condiciones óptimas. Revisión mínima anual de procedimientos. Uso de coberturas catastróficas complementarias a sistemas nacionales (p.ej. Consorcio de Compensación de Seguros en España).</p>
+      <p class="small"><span class="tag tag-interp">INTERPRETACIÓN</span> La centralización técnica en Mapfre Re, combinada con el requisito de calidad crediticia "Alto" para contrapartes externas, sugiere una política de reaseguro orientada a la optimización de capital y mitigación de cúmulos catastróficos, sin indicios en el documento de dependencia excesiva de una única contraparte externa (no se desagregan contrapartes individuales).</p>
+      <p class="small"><span class="tag tag-limit">LIMITACIÓN</span> El informe no desagrega la concentración de reaseguro por contraparte individual ni el porcentaje cedido a Mapfre Re vs. mercado externo; no se puede cuantificar el riesgo de concentración de contraparte reaseguradora específica.</p>
+    </div>
+  </div>
+  <p class="note">Fuente: C.1 pág.50-51; C.3 pág.54-55; D.1 pág.80-81.</p>
+</section>
+
+<!-- ================= 10. EVOLUCIÓN INTERANUAL ================= -->
+<section class="panel" id="s-evolucion">
+  <h2>Evolución Interanual 2024 → 2025</h2>
+  <p class="note"><span class="tag tag-limit">LIMITACIÓN</span> El documento solo provee 2 ejercicios comparativos (2024 y 2025). No se simulan series históricas adicionales.</p>
+  <div class="grid grid-3">
+    <div class="chart-wrap">
+      <div class="chart-title">Provisiones Técnicas SII por segmento</div>
+      <div class="chart-meta">M€ · Fuente: D.6.B, pág.94-95</div>
+      <div id="chartEvolPT"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Ratio de Solvencia y SCR</div>
+      <div class="chart-meta">% y M€ · Fuente: E.1.2, pág.103</div>
+      <div id="chartEvolSolvencia"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Primas netas imputadas, Beneficio y Ratio Combinado</div>
+      <div class="chart-meta">M€ / % · Fuente: Resumen Ejecutivo pág.4; A.2 pág.17</div>
+      <div id="chartEvolNegocio"></div>
+    </div>
+  </div>
+  <div class="table-scroll" style="margin-top:14px;">
+    <table id="tableEvolucion"><thead><tr><th>Magnitud</th><th>2024</th><th>2025</th><th>Δ%</th><th>Fuente</th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<!-- ================= 11. RIESGO Y CAPITAL (vista secundaria/técnica) ================= -->
+<section class="panel" id="s-capital">
+  <h2>Riesgo y Capital</h2>
+  <div class="grid grid-4">
+    <div class="kpi-card"><div class="kpi-label">SCR Grupo 2025</div><div class="kpi-value">5.154,5 M€</div><div class="kpi-delta up">+6,1% vs 2024</div><div class="kpi-source">E.2.1, pág.108 · S.25.05.22</div></div>
+    <div class="kpi-card"><div class="kpi-label">Fondos Propios admisibles</div><div class="kpi-value">10.580,5 M€</div><div class="kpi-delta up">+5,0% vs 2024</div><div class="kpi-source">E.1.2, pág.103 · S.23.01.22</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ratio de Solvencia</div><div class="kpi-value">205,3%</div><div class="kpi-delta down">−2,1 p.p. vs 2024 (207,4%)</div><div class="kpi-source">Zona verde Apetito Riesgo [175%-225%]</div></div>
+    <div class="kpi-card"><div class="kpi-label">Ratio FP/SCR consolidado mínimo</div><div class="kpi-value">402,1%</div><div class="kpi-delta up">399,2% en 2024</div><div class="kpi-source">E.1.2, pág.104</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px;">
+    <div class="chart-wrap">
+      <div class="chart-title">Composición del SCR por módulo de riesgo (Donut)</div>
+      <div class="chart-meta">% · 2025 vs 2024 · Fuente: C / E.2.1, pág.49, 107</div>
+      <div id="chartSCRDonut"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Estructura de Fondos Propios admisibles por nivel de calidad</div>
+      <div class="chart-meta">M€ · 2025 · Fuente: E.1.2, pág.102-103</div>
+      <div id="chartFondosPropios"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:18px;">Análisis de sensibilidad del Ratio de Solvencia</h3>
+  <div class="chart-wrap">
+    <div class="chart-title">Impacto de escenarios de estrés sobre el Ratio de Solvencia</div>
+    <div class="chart-meta">Puntos porcentuales (p.p.) respecto a 205,3% base · Fuente: C.7.1, pág.71</div>
+    <div id="chartSensibilidad"></div>
+  </div>
+  <p class="note">El Grupo seguiría cumpliendo requerimientos de capital en todos los escenarios analizados. Variables más relevantes: diferenciales de crédito corporativo/soberano, tipos de interés y precio de inmuebles. <span class="small">Fuente: C.7.1, pág.71-72.</span></p>
+
+  <h3 style="margin-top:18px;">Matriz de materialidad de riesgos (cualitativa)</h3>
+  <div class="chart-wrap">
+    <div class="chart-title">Riesgos materiales y emergentes identificados por el Grupo</div>
+    <div class="chart-meta">Clasificación cualitativa declarada en C.6 · <span class="tag tag-interp" style="font-size:.6rem;">posicionamiento en ejes = INTERPRETACIÓN del equipo analista</span></div>
+    <div id="matrixRiesgos"></div>
+  </div>
+  <p class="note"><span class="tag tag-limit">LIMITACIÓN</span> El documento no cuantifica probabilidad/impacto numérico para los riesgos materiales y emergentes (C.6); la posición en la matriz es una interpretación cualitativa basada en el orden de relevancia declarado por el Grupo y en la profundidad de la descripción narrativa, no en una métrica publicada.</p>
+</section>
+
+<!-- ================= 12. INSIGHTS PARA DIRECCIÓN ================= -->
+<section class="panel" id="s-insights">
+  <h2>Insights para Dirección Actuarial y Responsables de Solvencia II</h2>
+
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-calc">CÁLCULO DERIVADO</span> Brecha IFRS17 vs SII en PT: 8.314,0 M€ (34.932,6 − explicado por CSM)</div>
+    <p>La diferencia entre PT Contable Ajustado (34.932,6 M€) y PT SII (32.222,1 M€) es de 2.710,5 M€, coherente con el ajuste declarado en la conciliación de fondos propios (E.1.2, pág.104: "Ajustes valoración provisiones técnicas: 2.710,5 M€"). Este importe representa, en esencia, el CSM y las diferencias de descuento/margen de riesgo que SII no reconoce como pasivo sino que libera a fondos propios. <b>Pregunta para Dirección:</b> ¿Qué proporción de este ajuste corresponde a negocio con PB en España sujeto a medida transitoria valorada a cero?</p>
+  </div>
+
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-interp">INTERPRETACIÓN</span> Sensibilidad combinada de spreads es el escenario de mayor impacto en solvencia</div>
+    <p>El escenario de incremento conjunto de diferenciales corporativos y soberanos (+50 p.b.) reduce el ratio en 6,8 p.p., más del doble que cualquier otro escenario individual. Dado que el 61,3% de la renta fija es deuda soberana (33,1% española), la concentración en deuda pública nacional podría amplificar este riesgo en un escenario de estrés país. <b>Pregunta para Dirección:</b> ¿Existe un plan de contingencia específico para un escenario de ensanchamiento simultáneo de spreads soberano+corporativo más severo que el testeado (+50 p.b.)?</p>
+  </div>
+
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-dato">DATO PUBLICADO</span> Dependencia del límite DGSFP sobre medida transitoria: +6,1 p.p. de ratio "no reconocidos"</div>
+    <p>La medida transitoria sobre PT (vigente desde 2016, productos de ahorro con PB en España) está valorada a cero por resolución expresa de la DGSFP, pese a que sin ese límite aportaría +313,7 M€ de Fondos Propios y +6,1 p.p. al ratio de solvencia. <b>Pregunta para Dirección:</b> ¿Cuál es el calendario de extinción de esta medida transitoria (originalmente a 16 años desde 2016, es decir, hasta 2032) y su proyección de impacto futuro en el ratio?</p>
+  </div>
+
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-interp">INTERPRETACIÓN</span> Modelo interno parcial de longevidad: alcance limitado a una única cartera geográfica</div>
+    <p>El modelo interno parcial cubre únicamente el riesgo de longevidad de Mapfre Vida (España), mientras que el resto de riesgos biométricos del Grupo (incluyendo longevidad en otras geografías con rentas vitalicias, como Brasil o México) se valoran con fórmula estándar. <b>Pregunta para Dirección:</b> ¿Se ha evaluado la extensión del modelo interno (o el uso de parámetros específicos de empresa) a otras carteras de rentas vitalicias relevantes fuera de España?</p>
+  </div>
+
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-limit">LIMITACIÓN</span> Ausencia de desagregación de siniestralidad IBNR por antigüedad/año de ocurrencia</div>
+    <p>El informe describe metodologías generales (determinísticas/estocásticas) para No Vida sin presentar triángulos de desarrollo ni factores de link ratio. <b>Pregunta para Dirección:</b> ¿Puede la Dirección Corporativa Actuarial proporcionar el detalle de los triángulos de siniestralidad y la comparación de estimaciones vs. experiencia real (back-testing) de los últimos 3 ejercicios, especialmente para LoB de cola larga como Responsabilidad Civil General (534,3 M€) y RC Vehículos (4.024,9 M€)?</p>
+  </div>
+
+  <div class="insight-item">
+    <div class="insight-head"><span class="tag tag-reco">RECOMENDACIÓN</span> Reforzar trazabilidad de reaseguro intragrupo vs. externo</div>
+    <p>Dado que Mapfre Re concentra la función de reaseguro y asesoramiento técnico para todo el Grupo, se recomienda solicitar un desglose adicional (no publicado en el SFCR) de qué proporción de los 3.347,3 M€ de importes recuperables corresponde a contrapartes externas al Grupo vs. estructuras de retrocesión de Mapfre Re, para una evaluación más granular del riesgo de contraparte reasegurador.</p>
+  </div>
+
+</section>
+
+<!-- ================= 13. TRAZABILIDAD ================= -->
+<section class="panel" id="s-trazabilidad">
+  <h2>Trazabilidad de Datos</h2>
+  <div class="filter-bar">
+    <input type="text" id="trazaFilter" placeholder="Buscar por concepto, sección o página..." aria-label="Buscar en trazabilidad">
+    <select id="trazaEstadoFilter" aria-label="Filtrar por estado">
+      <option value="">Todos los estados</option>
+      <option value="Verificado">Verificado</option>
+      <option value="Calculado">Calculado</option>
+    </select>
+  </div>
+  <div class="table-scroll">
+    <table id="tableTrazabilidad"><thead><tr>
+      <th data-key="id">#</th><th data-key="concepto">Concepto</th><th data-key="valor">Valor</th>
+      <th data-key="seccion">Sección</th><th data-key="pagina">Página</th><th data-key="tipo_fuente">Nivel de fuente</th><th data-key="estado">Estado</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+  <p class="note">Leyenda de niveles: <span class="lvl1">Nivel 1</span> QRT oficial · <span class="lvl2">Nivel 2</span> tabla cuerpo SFCR con base QRT · <span class="lvl3">Nivel 3</span> texto narrativo/tabla cuerpo · <span class="lvl4">Nivel 4</span> cálculo derivado del agente.</p>
+</section>
+
+<!-- ================= 14. LIMITACIONES Y DISCREPANCIAS ================= -->
+<section class="panel" id="s-limitaciones">
+  <h2>Limitaciones y Datos No Disponibles / Discrepancias</h2>
+  <div id="limitacionesList"></div>
+  <p class="note">Esta sección se mantiene siempre visible y no oculta ninguna discrepancia o limitación identificada durante el análisis, conforme a la jerarquía de fiabilidad y reglas de rigor aplicadas.</p>
+</section>
+
+</main>
+
+<footer>
+  Dashboard generado automáticamente a partir del SFCR 2025 del Grupo Mapfre · Fecha/hora de generación: <span id="genTimestamp"></span><br>
+  Documento 100% offline · Sin conexiones externas, CDN ni APIs · Fuente única: SFCR cargado por el usuario · Elaborado por equipo actuarial/Solvencia II
+</footer>
+
+<script id="dashboard-data" type="application/json">{"entidad": {"razon_social": "Mapfre, S.A. y sociedades dependientes", "forma_juridica": "Sociedad Anónima cotizada", "domicilio": "Carretera de Pozuelo 52, 28222 Majadahonda (Madrid), España", "tipo_informe": "Grupo (consolidado)", "fecha_referencia": "31/12/2025", "ejercicio_comparativo": "31/12/2024", "moneda": "EUR", "unidad": "Millones de euros (salvo ratios en % y datos por acción)", "supervisor": "Dirección General de Seguros y Fondos de Pensiones (DGSFP) — España. Adicionalmente CNMV por cotización.", "auditor": "KPMG Auditores S.L. — informe sin salvedades, 11/02/2026", "accionista_control": "Cartera Mapfre, S.L.U. (69,7%), controlada al 100% por Fundación Mapfre", "paises": 37, "paises_principales": ["España", "Brasil", "Estados Unidos", "México"], "unidades_negocio": ["Seguros", "Reaseguro", "Global Risks", "MAWDY (Asistencia)"], "areas_regionales": ["Iberia (España y Portugal)", "Brasil", "LATAM Sur-Centro", "Norteamérica (EE.UU. y Puerto Rico)", "EMEA", "México (país estratégico)"], "tipo_entidad": "Mixta (Vida y No Vida), con reaseguro intragrupo (Mapfre Re) y actividades de gestión patrimonial, inversión inmobiliaria y servicios", "metodo_consolidacion": "Método 1 (consolidación contable) + Método 2 (deducción y agregación) para entidades de EE.UU., México y Brasil (países equivalentes)", "modelo_interno": "Modelo interno parcial para subriesgo de longevidad en Mapfre Vida (España), aprobado por DGSFP"}, "magnitudes": [{"concepto": "Beneficio atribuible", "valor_2025": 1132.6, "valor_2024": 967.5, "unidad": "M€", "var_pct": 17.1, "fuente": "Resumen Ejecutivo, pág. 4 / E.1.4 pág.107", "nivel": "Nivel 3 (tabla cuerpo SFCR)"}, {"concepto": "Ingresos del servicio de seguro", "valor_2025": 26352.4, "valor_2024": 25512.6, "unidad": "M€", "var_pct": 3.3, "fuente": "Resumen Ejecutivo, pág.4", "nivel": "Nivel 3"}, {"concepto": "Ingresos consolidados totales", "valor_2025": 34073.8, "valor_2024": null, "unidad": "M€", "var_pct": 2.1, "fuente": "Resumen Ejecutivo, pág.4", "nivel": "Nivel 3"}, {"concepto": "Ratio combinado (No Vida)", "valor_2025": 90.2, "valor_2024": 93.0, "unidad": "%", "var_pct": null, "fuente": "Resumen Ejecutivo, pág.4", "nivel": "Nivel 3"}, {"concepto": "ROE", "valor_2025": 12.4, "valor_2024": null, "unidad": "%", "var_pct": null, "fuente": "Resumen Ejecutivo, pág.4", "nivel": "Nivel 3"}, {"concepto": "Primas imputadas netas consolidadas", "valor_2025": 23726.0, "valor_2024": 22189.6, "unidad": "M€", "var_pct": 6.9, "fuente": "A.2, pág.17", "nivel": "Nivel 1 (QRT S.05.01)"}, {"concepto": "Ratio de Solvencia (SCR)", "valor_2025": 205.3, "valor_2024": 207.4, "unidad": "%", "var_pct": null, "fuente": "Resumen Ejecutivo pág.8 / E.1.2 pág.103", "nivel": "Nivel 1 (QRT S.23.01)"}, {"concepto": "SCR Grupo", "valor_2025": 5154.5, "valor_2024": 4857.9, "unidad": "M€", "var_pct": 6.1, "fuente": "E.2.1, pág.108-109", "nivel": "Nivel 1 (QRT S.25.05)"}, {"concepto": "Fondos propios admisibles (cobertura SCR)", "valor_2025": 10580.5, "valor_2024": 10077.4, "unidad": "M€", "var_pct": 5.0, "fuente": "E.1.2, pág.103", "nivel": "Nivel 1 (QRT S.23.01)"}, {"concepto": "Total Activos (Solvencia II)", "valor_2025": 51917.0, "valor_2024": 49284.3, "unidad": "M€", "var_pct": 5.3, "fuente": "D. pág.74 / D.6.A pág.94", "nivel": "Nivel 1 (QRT S.02.01)"}, {"concepto": "Total Pasivos (Solvencia II)", "valor_2025": 41984.8, "valor_2024": 40052.2, "unidad": "M€", "var_pct": 4.8, "fuente": "D. pág.74 / D.6.C pág.96", "nivel": "Nivel 1 (QRT S.02.01)"}, {"concepto": "Exceso Activos sobre Pasivos (SII)", "valor_2025": 9932.2, "valor_2024": 9232.1, "unidad": "M€", "var_pct": 7.6, "fuente": "Resumen Ejecutivo pág.8 / D.6.C pág.96", "nivel": "Nivel 1 (QRT S.02.01)"}, {"concepto": "Total Provisiones Técnicas (brutas SII)", "valor_2025": 32222.1, "valor_2024": null, "unidad": "M€", "var_pct": null, "fuente": "D.2, pág.83", "nivel": "Nivel 1 (QRT S.02.01 / S.12 / S.17)"}, {"concepto": "% Cedido en reaseguro (sobre PT)", "valor_2025": 10.4, "valor_2024": null, "unidad": "%", "var_pct": null, "fuente": "C.1, pág.51", "nivel": "Nivel 3"}], "pt_lob": [{"lob": "Seguro de gastos médicos", "mejor_est": 313.3, "margen_riesgo": 18.0, "pt_total": 331.3, "ramo": "No Vida"}, {"lob": "Seguro de protección de ingresos", "mejor_est": 95.5, "margen_riesgo": 2.3, "pt_total": 97.7, "ramo": "No Vida"}, {"lob": "Seguro de accidentes laborales", "mejor_est": 21.6, "margen_riesgo": 1.5, "pt_total": 23.1, "ramo": "No Vida"}, {"lob": "Resp. civil vehículos automóviles", "mejor_est": 2750.0, "margen_riesgo": 60.5, "pt_total": 2816.5, "ramo": "No Vida"}, {"lob": "Otro seguro de vehículos automóviles", "mejor_est": 1007.5, "margen_riesgo": 30.6, "pt_total": 1038.0, "ramo": "No Vida"}, {"lob": "Marítimo, aviación y transporte", "mejor_est": 1190.0, "margen_riesgo": 24.2, "pt_total": 1214.2, "ramo": "No Vida"}, {"lob": "Incendio y otros daños a bienes", "mejor_est": 4561.4, "margen_riesgo": 109.5, "pt_total": 4671.0, "ramo": "No Vida"}, {"lob": "Responsabilidad civil general", "mejor_est": 1134.0, "margen_riesgo": 26.5, "pt_total": 1160.6, "ramo": "No Vida"}, {"lob": "Crédito y caución", "mejor_est": 194.5, "margen_riesgo": 15.6, "pt_total": 210.1, "ramo": "No Vida"}, {"lob": "Defensa jurídica", "mejor_est": 3.4, "margen_riesgo": 0.3, "pt_total": 3.7, "ramo": "No Vida"}, {"lob": "Asistencia", "mejor_est": 51.6, "margen_riesgo": 2.2, "pt_total": 53.8, "ramo": "No Vida"}, {"lob": "Pérdidas pecuniarias diversas", "mejor_est": 140.1, "margen_riesgo": 6.8, "pt_total": 146.9, "ramo": "No Vida"}, {"lob": "Reaseguro NP Enfermedad", "mejor_est": 32.6, "margen_riesgo": 1.9, "pt_total": 34.5, "ramo": "No Vida"}, {"lob": "Reaseguro NP Resp. civil por daños", "mejor_est": 249.6, "margen_riesgo": 22.3, "pt_total": 271.9, "ramo": "No Vida"}, {"lob": "Reaseguro NP Marítimo/aviación/transp.", "mejor_est": 152.0, "margen_riesgo": 5.2, "pt_total": 157.2, "ramo": "No Vida"}, {"lob": "Reaseguro NP Daños a los bienes", "mejor_est": 614.0, "margen_riesgo": 48.3, "pt_total": 662.3, "ramo": "No Vida"}, {"lob": "Seguro de enfermedad (técnica Vida)", "mejor_est": 306.9, "margen_riesgo": 12.7, "pt_total": 319.6, "ramo": "Vida"}, {"lob": "Seguro con participación en beneficios", "mejor_est": 5689.8, "margen_riesgo": 90.3, "pt_total": 5780.0, "ramo": "Vida"}, {"lob": "Seguro vinculado a índices y fondos (unit-linked)", "mejor_est": -68.2, "margen_riesgo": 6.0, "pt_total": 3298.4, "ramo": "Vida", "nota": "Incluye 3.360,7 M€ calculados 'como un todo'"}, {"lob": "Otro seguro de vida", "mejor_est": 9708.0, "margen_riesgo": 223.3, "pt_total": 9931.3, "ramo": "Vida"}], "pt_resumen": [{"segmento": "PT No Vida (excl. enfermedad)", "SII": 12406.1, "contable_ajustado": 13648.4, "contable_ccaa": null, "mejor_est": 12048.2, "margen_riesgo": 358.0}, {"segmento": "PT Enfermedad (similar No Vida)", "SII": 486.7, "contable_ajustado": 529.0, "contable_ccaa": null, "mejor_est": 463.0, "margen_riesgo": 23.7}, {"segmento": "PT Vida (excl. enfermedad y unit-linked)", "SII": 15711.3, "contable_ajustado": 17240.4, "contable_ccaa": null, "mejor_est": 15397.8, "margen_riesgo": 313.6}, {"segmento": "PT Enfermedad (similar Vida)", "SII": 319.6, "contable_ajustado": 319.0, "contable_ccaa": null, "mejor_est": 306.9, "margen_riesgo": 12.7}, {"segmento": "PT Unit-linked / fondos de inversión", "SII": 3298.4, "contable_ajustado": 3196.0, "contable_ccaa": 3797.3, "mejor_est": -68.2, "margen_riesgo": 6.0, "como_un_todo": 3360.7}], "pt_totales": {"PT_no_vida_total": {"SII": 12892.8, "contable_ajustado": 14177.3, "contable_ccaa": 17172.8}, "PT_vida_total": {"SII": 16030.9, "contable_ajustado": 17559.4, "contable_ccaa": 19566.0}, "PT_total_grupo": {"SII": 32222.1, "contable_ajustado": 34932.6, "contable_ccaa": 40536.1}, "fuente": "D.2 Provisiones técnicas, pág.82-83 / Plantilla S.12.01 y S.17.01 (QRT no incluido explícitamente en cuerpo, cifras del cuerpo del informe = Nivel 2)"}, "pt_evolucion": {"no_vida": {"2025": 12892.8, "2024": 11889.6}, "vida_excl_ul": {"2025": 16030.9, "2024": 16086.9}, "unit_linked": {"2025": 3298.4, "2024": 2579.1}, "total": {"2025": 32222.1, "2024": 30555.6}, "fuente": "D.6.B, pág.94-95, Plantilla S.02.01.02"}, "balance_activos": {"total_activo_SII_2025": 51917.0, "total_activo_SII_2024": 49284.3, "total_activo_contable_ajustado_2025": 50586.7, "total_activo_contable_ccaa_2025": 58546.3, "principales": [{"partida": "Inversiones (total)", "SII": 36221.4, "contable_ajustado": 37011.0, "contable_ccaa": 45365.4}, {"partida": "Activos vinculados a unit-linked", "SII": 3449.1, "contable_ajustado": 3449.1, "contable_ccaa": 0}, {"partida": "Importes recuperables de reaseguro", "SII": 3347.3, "contable_ajustado": 4461.1, "contable_ccaa": 5602.0}, {"partida": "Activos por impuestos diferidos", "SII": 2169.9, "contable_ajustado": 88.8, "contable_ccaa": 297.4}, {"partida": "Inmovilizado material uso propio", "SII": 1239.9, "contable_ajustado": 1000.1, "contable_ccaa": 1194.8}, {"partida": "Efectivo y equivalentes", "SII": 1424.3, "contable_ajustado": 1424.6, "contable_ccaa": 1947.4}, {"partida": "Fondo de comercio", "SII": 0, "contable_ajustado": 1221.1, "contable_ccaa": 1239.0}, {"partida": "Activos intangibles", "SII": 0, "contable_ajustado": 760.9, "contable_ccaa": 1083.2}], "fuente": "D.1 Activos, pág.75-76 / Anexo D.6.A pág.93-94, Plantilla S.02.01.02"}, "balance_pasivos": {"total_pasivo_SII_2025": 41984.8, "total_pasivo_SII_2024": 40052.2, "total_pasivo_contable_ajustado_2025": 40852.8, "total_pasivo_contable_ccaa_2025": 47980.1, "principales": [{"partida": "Total Provisiones Técnicas", "SII": 32222.1, "contable_ajustado": 34932.6, "contable_ccaa": 40536.1}, {"partida": "Pasivos por impuestos diferidos", "SII": 2346.9, "contable_ajustado": 226.6, "contable_ccaa": 258.2}, {"partida": "Pasivos financieros (no deuda crédito)", "SII": 1850.7, "contable_ajustado": 2154.7, "contable_ccaa": 2681.6}, {"partida": "Pasivos subordinados", "SII": 1600.4, "contable_ajustado": 1631.3, "contable_ccaa": 1631.3}, {"partida": "Cuentas a pagar comerciales no seguros", "SII": 1333.3, "contable_ajustado": 1370.5, "contable_ccaa": 1994.9}, {"partida": "Cuentas a pagar de seguros e intermediarios", "SII": 856.9, "contable_ajustado": 0, "contable_ccaa": 0}, {"partida": "Cuentas a pagar de reaseguros", "SII": 649.6, "contable_ajustado": 0, "contable_ccaa": 0}, {"partida": "Otras provisiones no técnicas", "SII": 311.1, "contable_ajustado": 308.0, "contable_ccaa": 575.6}], "fuente": "D.3 Otros pasivos, pág.91 / Anexo D.6.C pág.95-96, Plantilla S.02.01.02"}, "excedente": {"2025": 9932.2, "2024": 9232.1, "variacion_pct": 7.6}, "patrimonio_contable_vs_sii": {"patrimonio_neto_NIIF_2025": 10514.2, "patrimonio_neto_NIIF_2024": 9985.5, "excedente_SII_2025": 9932.2, "excedente_SII_2024": 9232.1, "diferencia_pct_2025": -5.54}, "scr_modulos": [{"modulo": "Mercado", "pct_2025": 39.4, "pct_2024": 35.3}, {"modulo": "Contraparte", "pct_2025": 5.7, "pct_2024": 6.9}, {"modulo": "Suscripción Vida", "pct_2025": 3.7, "pct_2024": 4.1}, {"modulo": "Suscripción Enfermedad", "pct_2025": 1.5, "pct_2024": 1.7}, {"modulo": "Suscripción No Vida", "pct_2025": 39.1, "pct_2024": 41.2}, {"modulo": "Operacional", "pct_2025": 10.6, "pct_2024": 10.9}], "scr_calculo": {"total_componentes_no_diversificados": 7038.5, "diversificacion": -3137.3, "ajuste_agregacion_RFF_MAP": 129.9, "SCR_metodo1_consolidado": 4372.7, "SCR_metodo2_deduccion_agregacion": 781.8, "SCR_grupo_total": 5154.5, "SCR_grupo_total_2024": 4857.9, "SCR_grupo_consolidado_minimo": 1968.3, "SCR_grupo_consolidado_minimo_2024": 1846.4, "capacidad_absorcion_PT": -438.7, "capacidad_absorcion_PT_2024": -387.6, "capacidad_absorcion_IDT": -1204.9, "capacidad_absorcion_IDT_2024": -1107.0, "fuente": "E.2.1, pág.107-110, Plantilla S.25.05.22"}, "fondos_propios": {"total_admisibles_SCR_2025": 10580.5, "total_admisibles_SCR_2024": 10077.4, "nivel1_no_restringido_2025": 8897.9, "nivel1_no_restringido_2024": 8404.2, "nivel2_2025": 1106.1, "nivel2_2024": 1090.9, "nivel3_2025": 576.5, "nivel3_2024": 582.3, "ratio_solvencia_2025": 205.3, "ratio_solvencia_2024": 207.4, "SCR_2025": 5154.5, "SCR_2024": 4857.9, "ratio_SCR_minimo_grupo_2025": 402.1, "ratio_SCR_minimo_grupo_2024": 399.2, "apetito_riesgo_objetivo": "200% ± 25 p.p. (zona verde: 175%-225%)", "componentes_nivel1": ["Capital social ordinario (308,0)", "Prima de emisión (1.506,7)", "Reserva de conciliación (6.990,0)", "Fondos excedentarios (66,5)", "Intereses minoritarios netos (254,4)"], "deuda_subordinada_nivel2": "Dos emisiones (2017: 600M€, 2018: 500M€) a 30 años, opción amortización a 10 años", "deuda_subordinada_nivel3": "Emisión abril 2022, 500M€, vencimiento 8 años", "fuente": "E.1.2, pág.98-103, Plantilla S.23.01.22"}, "sensibilidades": [{"escenario": "Ratio de Solvencia base", "ratio": 205.3, "impacto_pp": null}, {"escenario": "Subida tipo interés +100pb", "ratio": 202.5, "impacto_pp": -2.8}, {"escenario": "Bajada tipo interés -100pb", "ratio": 207.2, "impacto_pp": 1.9}, {"escenario": "UFR 3,2%", "ratio": 205.2, "impacto_pp": -0.1}, {"escenario": "Apreciación EUR +10%", "ratio": 205.5, "impacto_pp": 0.2}, {"escenario": "Caída renta variable -25%", "ratio": 205.8, "impacto_pp": 0.5}, {"escenario": "Incremento spread corporativo +50pb", "ratio": 204.1, "impacto_pp": -1.2}, {"escenario": "Incremento spread corp.+soberano +50pb", "ratio": 198.5, "impacto_pp": -6.8}, {"escenario": "Caída inmuebles -10%", "ratio": 203.1, "impacto_pp": -2.2}, {"escenario": "Sin ajuste casamiento ni volatilidad", "ratio": 203.8, "impacto_pp": -1.5}], "ltg_measures": {"ajuste_casamiento_impacto_PT": 143.6, "ajuste_casamiento_impacto_SCR": -27.7, "ajuste_volatilidad_bps": 14, "ajuste_volatilidad_impacto_PT": 35.2, "medida_transitoria_PT": "Valorada a CERO por resolución DGSFP (límite Disposición Transitoria 2ª RD 1060/2015)", "medida_transitoria_impacto_sin_limite_PT": -418.3, "medida_transitoria_impacto_sin_limite_FP": 313.7, "medida_transitoria_impacto_sin_limite_ratio_pp": 6.1, "fuente": "D.2.2, pág.89-90"}, "reaseguro": {"pct_cedido_PT_2025": 10.4, "importes_recuperables_SII_2025": 3347.3, "importes_recuperables_SII_2024": 2938.4, "importes_recuperables_novida_2025": 3310.0, "importes_recuperables_vida_2025": 37.3, "entidad_reaseguro_grupo": "Mapfre Re (unidades Reaseguro y Global Risks)", "calidad_crediticia_minima": "Alto (nivel de calidad crediticia 2) con carácter general", "gestion": "Departamento de Reaseguro de cada entidad + asesoría técnica Mapfre Re; estructura y condiciones óptimas definidas conjuntamente", "revision": "Periodicidad mínima anual de procedimientos", "cesion_catastrofico": "Coberturas complementarias a sistemas de protección catastrófica nacionales (p.ej. Consorcio de Compensación de Seguros en España)", "fuente": "C.1 pág.50-51; D.1 pág.80-81; D.6.A pág.93-94"}, "primas_lob_novida": [{"lob": "Incendio y otros daños a bienes", "primas_imp_neta_2025": 5579.3, "primas_imp_neta_2024": 6380.2, "pct_no_vida": 33.1, "pct_total": 23.5}, {"lob": "Resp. civil vehículos automóviles", "primas_imp_neta_2025": 4024.9, "primas_imp_neta_2024": 3280.1, "pct_no_vida": 23.9, "pct_total": 17.0}, {"lob": "Otro seguro de vehículos automóviles", "primas_imp_neta_2025": 2764.6, "primas_imp_neta_2024": 2515.6, "pct_no_vida": 16.4, "pct_total": 11.7}, {"lob": "Seguro de gastos médicos", "primas_imp_neta_2025": 2276.3, "primas_imp_neta_2024": 1804.1, "pct_no_vida": 13.5, "pct_total": 9.6}, {"lob": "Resp. civil general", "primas_imp_neta_2025": 534.3, "primas_imp_neta_2024": 537.2, "pct_no_vida": 3.2, "pct_total": 2.3}, {"lob": "Marítimo, aviación y transporte", "primas_imp_neta_2025": 564.8, "primas_imp_neta_2024": 383.3, "pct_no_vida": 3.4, "pct_total": 2.4}, {"lob": "Crédito y caución", "primas_imp_neta_2025": 233.5, "primas_imp_neta_2024": 213.7, "pct_no_vida": 1.4, "pct_total": 1.0}, {"lob": "Asistencia", "primas_imp_neta_2025": 130.8, "primas_imp_neta_2024": 115.3, "pct_no_vida": 0.8, "pct_total": 0.6}, {"lob": "Pérdidas pecuniarias diversas", "primas_imp_neta_2025": 154.1, "primas_imp_neta_2024": 58.6, "pct_no_vida": 0.9, "pct_total": 0.6}, {"lob": "Protección de ingresos", "primas_imp_neta_2025": 121.2, "primas_imp_neta_2024": 87.2, "pct_no_vida": 0.7, "pct_total": 0.5}, {"lob": "Accidentes laborales", "primas_imp_neta_2025": 126.1, "primas_imp_neta_2024": 53.7, "pct_no_vida": 0.7, "pct_total": 0.5}, {"lob": "Defensa jurídica", "primas_imp_neta_2025": 10.4, "primas_imp_neta_2024": 5.9, "pct_no_vida": 0.1, "pct_total": 0.0}, {"lob": "Reaseguro NP (4 líneas agregadas)", "primas_imp_neta_2025": 329.6, "primas_imp_neta_2024": 308.7, "pct_no_vida": 2.0, "pct_total": 1.4}], "primas_lob_vida": [{"lob": "Otro seguro de vida", "primas_imp_neta_2025": 3854.4, "primas_imp_neta_2024": 4709.5}, {"lob": "Seguro con participación en beneficios", "primas_imp_neta_2025": 820.9, "primas_imp_neta_2024": 837.7}, {"lob": "Seguro vinculado a índices y fondos (unit-linked)", "primas_imp_neta_2025": 959.5, "primas_imp_neta_2024": 217.3}, {"lob": "Reaseguro de Vida", "primas_imp_neta_2025": 505.8, "primas_imp_neta_2024": 426.4}, {"lob": "Seguro de enfermedad (técnica vida)", "primas_imp_neta_2025": 735.5, "primas_imp_neta_2024": 255.0}], "primas_geografia_novida": [{"pais": "España", "primas_2025": 5620.7, "primas_2024": 5225.1, "siniestralidad_neta_2025": 3631.2, "siniestralidad_neta_2024": 3718.4}, {"pais": "Brasil", "primas_2025": 2436.5, "primas_2024": 2503.3, "siniestralidad_neta_2025": 807.7, "siniestralidad_neta_2024": 916.8}, {"pais": "Estados Unidos", "primas_2025": 2142.5, "primas_2024": 2017.6, "siniestralidad_neta_2025": 1381.3, "siniestralidad_neta_2024": 1250.5}, {"pais": "México", "primas_2025": 695.2, "primas_2024": 685.5, "siniestralidad_neta_2025": 452.5, "siniestralidad_neta_2024": 420.3}, {"pais": "Turquía", "primas_2025": 577.1, "primas_2024": 502.0, "siniestralidad_neta_2025": 436.7, "siniestralidad_neta_2024": 350.0}, {"pais": "Perú", "primas_2025": 380.8, "primas_2024": 357.0, "siniestralidad_neta_2025": 214.5, "siniestralidad_neta_2024": 223.3}], "primas_geografia_vida": [{"pais": "España", "primas_2025": 3213.2, "primas_2024": 2609.4}, {"pais": "Brasil", "primas_2025": 1274.3, "primas_2024": 1318.4}, {"pais": "México", "primas_2025": 597.8, "primas_2024": 417.1}, {"pais": "Perú", "primas_2025": 318.5, "primas_2024": 252.7}, {"pais": "Portugal", "primas_2025": 246.9, "primas_2024": 243.8}, {"pais": "Francia", "primas_2025": 262.7, "primas_2024": 235.7}], "ingresos_area": [{"area": "Iberia", "ingresos_2025": 7808.6, "ingresos_2024": 7450.2, "var_pct": 4.8, "resultado_2025": 501.4, "resultado_2024": 436.1}, {"area": "Brasil", "ingresos_2025": 4514.2, "ingresos_2024": 4603.6, "var_pct": -1.9, "resultado_2025": 282.4, "resultado_2024": 253.2}, {"area": "Otros LATAM*", "ingresos_2025": 4937.8, "ingresos_2024": 4876.2, "var_pct": 1.3, "resultado_2025": 40.3, "resultado_2024": 139.9}, {"area": "Norteamérica", "ingresos_2025": 2664.5, "ingresos_2024": 2752.8, "var_pct": -3.2, "resultado_2025": 137.9, "resultado_2024": 112.0}, {"area": "EMEA", "ingresos_2025": 1394.6, "ingresos_2024": 1285.9, "var_pct": 8.5, "resultado_2025": -16.0, "resultado_2024": -42.3}, {"area": "Negocio Reaseguro", "ingresos_2025": 8337.4, "ingresos_2024": 7983.7, "var_pct": 4.4, "resultado_2025": 420.3, "resultado_2024": 334.5}, {"area": "Asistencia-MAWDY", "ingresos_2025": 213.8, "ingresos_2024": 209.3, "var_pct": 2.1, "resultado_2025": 6.0, "resultado_2024": 4.3}], "trazabilidad": [{"id": 1, "concepto": "Beneficio atribuible 2025", "valor": "1.132,6 M€", "seccion": "Resumen Ejecutivo / A.1.2", "pagina": "4", "tipo_fuente": "Nivel 3 (tabla cuerpo)", "estado": "Verificado"}, {"id": 2, "concepto": "Ingresos del servicio de seguro 2025", "valor": "26.352,4 M€", "seccion": "Resumen Ejecutivo", "pagina": "4", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 3, "concepto": "Ratio combinado No Vida 2025", "valor": "90,2%", "seccion": "Resumen Ejecutivo", "pagina": "4", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 4, "concepto": "Primas imputadas netas consolidadas 2025", "valor": "23.726,0 M€", "seccion": "A.2", "pagina": "17", "tipo_fuente": "Nivel 1 (QRT S.05.01)", "estado": "Verificado"}, {"id": 5, "concepto": "Primas No Vida netas imputadas 2025", "valor": "16.849,9 M€", "seccion": "A.2 / S.05.01.02", "pagina": "15", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 6, "concepto": "Primas Vida netas imputadas 2025", "valor": "6.876,1 M€", "seccion": "A.2 / S.05.01.02", "pagina": "16", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 7, "concepto": "Total Activos Solvencia II 2025", "valor": "51.917,0 M€", "seccion": "D.1 / D.6.A", "pagina": "76", "tipo_fuente": "Nivel 1 (QRT S.02.01.02)", "estado": "Verificado"}, {"id": 8, "concepto": "Total Pasivos Solvencia II 2025", "valor": "41.984,8 M€", "seccion": "D.3 / D.6.C", "pagina": "91", "tipo_fuente": "Nivel 1 (QRT S.02.01.02)", "estado": "Verificado"}, {"id": 9, "concepto": "Exceso Activos sobre Pasivos 2025", "valor": "9.932,2 M€", "seccion": "D / D.6.C", "pagina": "96", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 10, "concepto": "Total Provisiones Técnicas SII 2025", "valor": "32.222,1 M€", "seccion": "D.2", "pagina": "82-83", "tipo_fuente": "Nivel 2 (tabla cuerpo con base QRT)", "estado": "Verificado"}, {"id": 11, "concepto": "PT No Vida SII 2025", "valor": "12.892,8 M€", "seccion": "D.2 / D.6.B", "pagina": "94", "tipo_fuente": "Nivel 1 (S.02.01.02)", "estado": "Verificado"}, {"id": 12, "concepto": "PT Vida (excl. UL) SII 2025", "valor": "16.030,9 M€", "seccion": "D.2 / D.6.B", "pagina": "94", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 13, "concepto": "PT Unit-Linked SII 2025", "valor": "3.298,4 M€", "seccion": "D.2 / D.6.B", "pagina": "94-95", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 14, "concepto": "Margen de riesgo total (No Vida+Vida+Enf.)", "valor": "≈714,0 M€ (358,0+23,7+12,7+313,6+6,0)", "seccion": "D.2", "pagina": "82-83", "tipo_fuente": "Nivel 4 (cálculo derivado por suma de componentes)", "estado": "Calculado"}, {"id": 15, "concepto": "SCR Grupo 2025", "valor": "5.154,5 M€", "seccion": "E.2.1", "pagina": "108-109", "tipo_fuente": "Nivel 1 (S.25.05.22)", "estado": "Verificado"}, {"id": 16, "concepto": "Fondos propios admisibles cobertura SCR", "valor": "10.580,5 M€", "seccion": "E.1.2", "pagina": "103", "tipo_fuente": "Nivel 1 (S.23.01.22)", "estado": "Verificado"}, {"id": 17, "concepto": "Ratio de Solvencia 2025", "valor": "205,3%", "seccion": "Resumen Ejecutivo / E.1.2", "pagina": "8", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 18, "concepto": "% cedido en reaseguro sobre PT", "valor": "10,4%", "seccion": "C.1", "pagina": "51", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 19, "concepto": "Importes recuperables de reaseguro 2025", "valor": "3.347,3 M€", "seccion": "D.1 / D.6.A", "pagina": "76, 94", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 20, "concepto": "Patrimonio neto NIIF 2025", "valor": "10.514,2 M€", "seccion": "E.1.2", "pagina": "104", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 21, "concepto": "Diferencia Patrimonio NIIF vs Excedente SII", "valor": "-582,0 M€ (-5,5%)", "seccion": "E.1.2 (conciliación)", "pagina": "104", "tipo_fuente": "Nivel 4 (cálculo derivado: 9.932,2-10.514,2)", "estado": "Calculado"}, {"id": 22, "concepto": "Impacto medida transitoria PT (si no se limitara)", "valor": "-418,3 M€ PT / +313,7 M€ FP / +6,1 p.p. ratio", "seccion": "D.2.2.d / Resumen Ejecutivo", "pagina": "9, 90", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 23, "concepto": "Tasa de coste de capital (margen de riesgo)", "valor": "6%", "seccion": "D.2.1", "pagina": "86", "tipo_fuente": "Nivel 3 (normativo)", "estado": "Verificado"}, {"id": 24, "concepto": "Modelo interno parcial", "valor": "Subriesgo de longevidad, Mapfre Vida España", "seccion": "E.4", "pagina": "112", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 25, "concepto": "Beneficios esperados en primas futuras (EPIFP)", "valor": "1.508,0 M€ bruto reaseguro", "seccion": "C.4 / E.1.2", "pagina": "56, 102", "tipo_fuente": "Nivel 1 (S.23.01.22)", "estado": "Verificado"}, {"id": 26, "concepto": "UFR aplicado", "valor": "3,3%", "seccion": "C.7.1 (nota al pie)", "pagina": "71", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 27, "concepto": "Ajuste por volatilidad EUR", "valor": "14 p.b.", "seccion": "D.2.2.b", "pagina": "90", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 28, "concepto": "Impacto siniestros California (incendios)", "valor": "118,1 M€ neto atribuido", "seccion": "A.1.2", "pagina": "12", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 29, "concepto": "Impacto hiperinflación (Venezuela/Argentina/Turquía)", "valor": "-42,3 M€ en resultado", "seccion": "A.1.2", "pagina": "12", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 30, "concepto": "Impacto subida salario mínimo Colombia", "valor": "-57 M€ neto (ramo Vida, rentas vitalicias)", "seccion": "A.1.2", "pagina": "12", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 31, "concepto": "Total provisiones técnicas Valor Contable CCAA 2025", "valor": "40.536,1 M€", "seccion": "D.2", "pagina": "82-83", "tipo_fuente": "Nivel 2", "estado": "Verificado — DISCREPANCIA DE PERÍMETRO/NORMA vs SII (ver Limitaciones)"}, {"id": 32, "concepto": "Ratio FP/SCR consolidado mínimo", "valor": "402,1%", "seccion": "E.1.2", "pagina": "104", "tipo_fuente": "Nivel 1", "estado": "Verificado"}, {"id": 33, "concepto": "Peso No Vida sobre primas netas totales", "valor": "71,0% (2025 y 2024)", "seccion": "A.2", "pagina": "17", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 34, "concepto": "% inversión grado de inversión (renta fija)", "valor": "90,5%", "seccion": "C.2", "pagina": "52", "tipo_fuente": "Nivel 3", "estado": "Verificado"}, {"id": 35, "concepto": "Concentración deuda soberana española", "valor": "33,1% de deuda pública / 61,3% soberana del total RF", "seccion": "C.2", "pagina": "52", "tipo_fuente": "Nivel 3", "estado": "Verificado"}], "limitaciones": [{"tipo": "LIMITACIÓN", "descripcion": "El documento no incluye los anexos QRT completos en formato de plantilla oficial (S.02.01, S.05.01, S.12.01, S.17.01, S.23.01, S.25.05) como ficheros independientes; las cifras QRT se presentan incorporadas narrativamente dentro del cuerpo del informe (D.6 Anexos). Se ha asignado Nivel 1 cuando el propio informe cita expresamente la plantilla EIOPA de origen (ej. 'Plantilla S.02.01.02', 'Plantilla S.23.01.22').", "impacto": "Sin el XBRL/QRT nativo no es posible verificar de forma independiente el desglose por celda exacta; se confía en la cita de plantilla declarada por el emisor."}, {"tipo": "LIMITACIÓN", "descripcion": "Para varias magnitudes 2024 de comparación (p.ej. Ingresos consolidados totales 34.073,8 M€, Total PT Valor Contable CCAA 2024) el documento no reporta explícitamente el valor del ejercicio anterior en cifra absoluta, solo la variación porcentual.", "impacto": "No se puede reconstruir el valor absoluto 2024 sin riesgo de redondeo; se reporta 'No disponible' en vez de inferir."}, {"tipo": "DISCREPANCIA", "descripcion": "Total Provisiones Técnicas: Valor Solvencia II 32.222,1 M€ vs Valor Contable Ajustado 34.932,6 M€ vs Valor Contable CCAA (IFRS17) 40.536,1 M€. Diferencia de 8.314,0 M€ entre SII y CCAA.", "ubicacion": "D.2, pág.82-83", "causa_declarada": "CSM (margen de servicio contractual) bajo IFRS17 no reconocido en SII; diferente curva de descuento; diferente tratamiento de margen de riesgo/incertidumbre; cálculo simplificado PAA.", "resolucion": "Ambas cifras se presentan; NO se promedia ni se elige una sobre otra. Prioridad regulatoria: SII (32.222,1 M€) para ratio de solvencia."}, {"tipo": "DISCREPANCIA", "descripcion": "Excedente de activos sobre pasivos: 9.932,2 M€ (SII) vs 9.733,9 M€ (Contable Ajustado) vs 10.566,2 M€ (Contable CCAA). Patrimonio neto NIIF en cuentas anuales = 10.514,2 M€ (difiere de los tres anteriores por el ajuste de perímetro de consolidación de -832,3 M€).", "ubicacion": "D.3 pág.91 / E.1.2 pág.104", "causa_declarada": "Perímetro de consolidación SII distinto al contable (método 2 deducción y agregación para EE.UU./México/Brasil; exclusión de entidades poco significativas ≈2% del activo).", "resolucion": "Se reportan las 4 cifras con su contexto; el Excedente SII (9.932,2 M€) es la base regulatoria relevante para fondos propios."}, {"tipo": "LIMITACIÓN", "descripcion": "El margen de riesgo total del Grupo no se presenta como una única cifra consolidada explícita; se ha calculado por agregación de los componentes por línea de negocio declarados en la tabla D.2 (358,0+23,7+12,7+313,6+6,0 ≈ 714,0 M€).", "impacto": "Cifra etiquetada como [CÁLCULO DERIVADO], no como dato publicado directo."}, {"tipo": "LIMITACIÓN", "descripcion": "No se presenta un run-off triangle ni desarrollo histórico de siniestralidad (IBNR) a nivel de detalle actuarial; el informe solo indica métodos generales (determinísticos/estocásticos) sin parámetros específicos (factores de desarrollo, loss ratios últimos por año de ocurrencia).", "impacto": "No es posible evaluar independientemente la suficiencia de las provisiones de siniestros pendientes por antigüedad."}, {"tipo": "LIMITACIÓN", "descripcion": "El informe no desagrega el Margen de Riesgo ni la Mejor Estimación por país/entidad individual dentro del Grupo (solo a nivel de línea de negocio agregada del Grupo).", "impacto": "No se puede aislar el efecto de Mapfre Vida España (donde aplica el modelo interno parcial de longevidad) sobre la MBE de Vida sin información adicional."}, {"tipo": "LIMITACIÓN", "descripcion": "Algunas celdas de las tablas de suscripción por LoB (A.2) aparecen vacías en el documento origen para 'Reaseguro no proporcional aceptado' en varias líneas de No Vida (p.ej. gastos médicos, protección de ingresos) y para 'Balance - Otros gastos/ingresos técnicos' y 'Total gastos' en múltiples columnas.", "impacto": "Dichas celdas se reportan como No disponible, no se ha inventado ni interpolado ningún valor."}, {"tipo": "DISCREPANCIA MENOR", "descripcion": "En la tabla de Saldos de Balance intragrupo (A.5, pág.25) el valor de 'Activos de contrato de reaseguro 2024' aparece como '3.225.3' con un punto en vez de coma, posible error tipográfico de separador decimal en el documento original.", "ubicacion": "A.5, pág.25", "resolucion": "Se transcribe tal cual aparece en el documento (3.225,3 M€ asumiendo error de formato), sin alterar el dato fuente; se marca como advertencia."}, {"tipo": "LIMITACIÓN", "descripcion": "El informe no incluye un ejercicio comparativo anterior a 2024 (no hay serie histórica de 3+ años), por lo que los gráficos de evolución interanual del dashboard se limitan a comparación 2024 vs 2025 (2 puntos), sin proyectar tendencias.", "impacto": "No se simulan series históricas adicionales no soportadas por el documento."}], "generado": "19/10/2026 14:32:11"}</script>
+
+<script>
+'use strict';
+const DATA = JSON.parse(document.getElementById('dashboard-data').textContent);
+const PRIMARY = '#B40025', ACCENT='#E30613', SECOND='#1A1A1A';
+const PALETTE = ['#B40025','#1A1A1A','#E39A00','#1C6B3C','#1552B0','#6425B5','#9A6B00','#6B6B70','#D4727C','#4C8C7A'];
+
+function fmt(n, dec=1){
+  if(n===null||n===undefined||isNaN(n)) return 'N/D';
+  return Number(n).toLocaleString('es-ES',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtPct(n,dec=1){ return n===null||n===undefined?'N/D':fmt(n,dec)+'%'; }
+function svgEl(tag,attrs){
+  const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(const k in attrs) el.setAttribute(k,attrs[k]);
+  return el;
+}
+function makeSVG(w,h){ return svgEl('svg',{width:'100%',height:h,viewBox:`0 0 ${w} ${h}`,preserveAspectRatio:'xMidYMid meet',role:'img'}); }
+function addTooltip(el, text){
+  el.setAttribute('tabindex','0');
+  const title = svgEl('title',{}); title.textContent=text; el.appendChild(title);
+  el.addEventListener('mouseenter',()=>{el.style.opacity='0.78';});
+  el.addEventListener('mouseleave',()=>{el.style.opacity='1';});
+}
+
+// ---------- BARRAS HORIZONTALES ----------
+function barH(container, data, opts={}){
+  const W=620,barH_=24,gap=10,leftPad=opts.leftPad||170,rightPad=60,topPad=10;
+  const n=data.length;
+  const H=topPad+n*(barH_+gap);
+  const maxVal=opts.maxVal||Math.max(...data.map(d=>Math.max(...(Array.isArray(d.value)?d.value:[d.value]))))*1.15;
+  const svg=makeSVG(W,H);
+  data.forEach((d,i)=>{
+    const y=topPad+i*(barH_+gap);
+    const label=svgEl('text',{x:leftPad-8,y:y+barH_*0.65,'text-anchor':'end','font-size':'11','fill':'#1C1C1E'});
+    label.textContent=d.label; svg.appendChild(label);
+    const values=Array.isArray(d.value)?d.value:[d.value];
+    const colors=d.colors||[PRIMARY,'#D9D9DC'];
+    let xCursor=leftPad;
+    const segW=(W-leftPad-rightPad);
+    values.forEach((v,vi)=>{
+      const w=Math.max(0,(v/maxVal)*segW);
+      const rect=svgEl('rect',{x:xCursor,y:y,width:w,height:barH_,rx:3,fill:colors[vi%colors.length]});
+      addTooltip(rect, `${d.label}: ${fmt(v)} ${opts.unit||''}`);
+      svg.appendChild(rect);
+      xCursor+=w;
+    });
+    const total=values.reduce((a,b)=>a+b,0);
+    const valText=svgEl('text',{x:Math.min(xCursor+6,W-4),y:y+barH_*0.65,'font-size':'11','font-weight':'700','fill':'#1A1A1A'});
+    valText.textContent=fmt(total,opts.dec!==undefined?opts.dec:1);
+    svg.appendChild(valText);
+  });
+  container.appendChild(svg);
+}
+
+// ---------- BARRAS VERTICALES AGRUPADAS ----------
+function barV(container, categories, series, opts={}){
+  const W=opts.width||600,H=opts.height||280,leftPad=55,rightPad=15,topPad=20,bottomPad=55;
+  const plotW=W-leftPad-rightPad, plotH=H-topPad-bottomPad;
+  const allVals=series.flatMap(s=>s.data);
+  const maxVal=opts.maxVal||Math.max(...allVals)*1.15;
+  const minVal=Math.min(0,Math.min(...allVals));
+  const svg=makeSVG(W,H);
+  // axis
+  const axisY=svgEl('line',{x1:leftPad,y1:topPad,x2:leftPad,y2:H-bottomPad,stroke:'#D0D0D2'});svg.appendChild(axisY);
+  const axisX=svgEl('line',{x1:leftPad,y1:H-bottomPad,x2:W-rightPad,y2:H-bottomPad,stroke:'#D0D0D2'});svg.appendChild(axisX);
+  // y gridlines + labels
+  const steps=4;
+  for(let s=0;s<=steps;s++){
+    const val=maxVal*s/steps;
+    const y=H-bottomPad-(val/maxVal)*plotH;
+    svg.appendChild(svgEl('line',{x1:leftPad,y1:y,x2:W-rightPad,y2:y,stroke:'#F0F0F0'}));
+    const t=svgEl('text',{x:leftPad-6,y:y+3,'text-anchor':'end','font-size':'9','fill':'#6B6B70'});
+    t.textContent=fmt(val,0); svg.appendChild(t);
+  }
+  const groupW=plotW/categories.length;
+  const barW=Math.min(26,(groupW*0.7)/series.length);
+  categories.forEach((cat,ci)=>{
+    const gx=leftPad+ci*groupW+groupW/2;
+    series.forEach((s,si)=>{
+      const v=s.data[ci];
+      const bh=(v/maxVal)*plotH;
+      const bx=gx-(series.length*barW)/2+si*barW;
+      const by=H-bottomPad-bh;
+      const rect=svgEl('rect',{x:bx,y:by,width:barW-2,height:bh,fill:s.color||PALETTE[si],rx:2});
+      addTooltip(rect,`${cat} — ${s.name}: ${fmt(v)} ${opts.unit||''}`);
+      svg.appendChild(rect);
+    });
+    const lbl=svgEl('text',{x:gx,y:H-bottomPad+16,'text-anchor':'middle','font-size':'9.5','fill':'#1C1C1E'});
+    lbl.textContent=cat; svg.appendChild(lbl);
+  });
+  container.appendChild(svg);
+  if(opts.legend!==false){
+    const leg=document.createElement('div'); leg.className='legend';
+    series.forEach((s,si)=>{
+      const it=document.createElement('div'); it.className='legend-item';
+      it.innerHTML=`<span class="legend-dot" style="background:${s.color||PALETTE[si]}"></span>${s.name}`;
+      leg.appendChild(it);
+    });
+    container.appendChild(leg);
+  }
+}
+
+// ---------- DONUT ----------
+function donut(container, segments, opts={}){
+  const W=260,H=260,cx=130,cy=130,rOuter=100,rInner=58;
+  const total=segments.reduce((a,b)=>a+b.value,0);
+  let angle=-Math.PI/2;
+  const svg=makeSVG(W,H);
+  segments.forEach((seg,i)=>{
+    const frac=seg.value/total;
+    const a0=angle, a1=angle+frac*2*Math.PI;
+    const x0=cx+rOuter*Math.cos(a0), y0=cy+rOuter*Math.sin(a0);
+    const x1=cx+rOuter*Math.cos(a1), y1=cy+rOuter*Math.sin(a1);
+    const xi0=cx+rInner*Math.cos(a1), yi0=cy+rInner*Math.sin(a1);
+    const xi1=cx+rInner*Math.cos(a0), yi1=cy+rInner*Math.sin(a0);
+    const large=frac>0.5?1:0;
+    const path=svgEl('path',{d:`M${x0},${y0} A${rOuter},${rOuter} 0 ${large} 1 ${x1},${y1} L${xi0},${yi0} A${rInner},${rInner} 0 ${large} 0 ${xi1},${yi1} Z`,fill:seg.color||PALETTE[i%PALETTE.length]});
+    addTooltip(path,`${seg.label}: ${fmtPct(seg.value)}`);
+    svg.appendChild(path);
+    angle=a1;
+  });
+  const centerT=svgEl('text',{x:cx,y:cy-4,'text-anchor':'middle','font-size':'13','font-weight':'800','fill':'#1A1A1A'});
+  centerT.textContent=opts.centerLabel||''; svg.appendChild(centerT);
+  const centerT2=svgEl('text',{x:cx,y:cy+14,'text-anchor':'middle','font-size':'9','fill':'#6B6B70'});
+  centerT2.textContent=opts.centerSub||''; svg.appendChild(centerT2);
+  container.appendChild(svg);
+  const leg=document.createElement('div'); leg.className='legend';
+  segments.forEach((s,i)=>{
+    const it=document.createElement('div'); it.className='legend-item';
+    it.innerHTML=`<span class="legend-dot" style="background:${s.color||PALETTE[i%PALETTE.length]}"></span>${s.label} (${fmtPct(s.value)})`;
+    leg.appendChild(it);
+  });
+  container.appendChild(leg);
+}
+
+// ---------- WATERFALL ----------
+function waterfall(container, steps, opts={}){
+  const W=600,H=260,leftPad=15,rightPad=15,topPad=20,bottomPad=55;
+  const plotW=W-leftPad-rightPad, plotH=H-topPad-bottomPad;
+  let cum=0; const bars=steps.map(s=>{const start=cum; cum+=s.delta; return {...s,start,end:cum};});
+  const maxVal=Math.max(...bars.map(b=>Math.max(b.start,b.end)))*1.1;
+  const minVal=Math.min(0,Math.min(...bars.map(b=>Math.min(b.start,b.end))));
+  const range=maxVal-minVal;
+  const scaleY=v=>H-bottomPad-((v-minVal)/range)*plotH;
+  const svg=makeSVG(W,H);
+  const barW=(plotW/bars.length)*0.62;
+  const gap=plotW/bars.length;
+  bars.forEach((b,i)=>{
+    const x=leftPad+i*gap+(gap-barW)/2;
+    const y=scaleY(Math.max(b.start,b.end));
+    const h=Math.abs(scaleY(b.start)-scaleY(b.end));
+    const color = b.isTotal?SECOND:(b.delta>=0?'#1C6B3C':PRIMARY);
+    const rect=svgEl('rect',{x,y,width:barW,height:Math.max(h,1),fill:color,rx:2});
+    addTooltip(rect,`${b.label}: ${fmt(b.isTotal?b.end:b.delta)} M€`);
+    svg.appendChild(rect);
+    const lbl=svgEl('text',{x:x+barW/2,y:H-bottomPad+16,'text-anchor':'middle','font-size':'8.6','fill':'#1C1C1E'});
+    lbl.textContent=b.label; svg.appendChild(lbl);
+    const valT=svgEl('text',{x:x+barW/2,y:y-5,'text-anchor':'middle','font-size':'9','font-weight':'700','fill':color});
+    valT.textContent=fmt(b.isTotal?b.end:b.delta,0); svg.appendChild(valT);
+  });
+  container.appendChild(svg);
+}
+</script>
+
+<script>
+// ============ KPI CARDS ============
+function renderKPIs(){
+  const grid=document.getElementById('kpiGrid');
+  DATA.magnitudes.forEach(m=>{
+    const card=document.createElement('div'); card.className='kpi-card';
+    const deltaHTML = m.var_pct!=null ? `<div class="kpi-delta ${m.var_pct>=0?'up':'down'}">${m.var_pct>=0?'▲':'▼'} ${fmt(Math.abs(m.var_pct))}% vs 2024</div>` : '<div class="kpi-delta">Δ% no disponible</div>';
+    card.innerHTML = `<div class="kpi-label">${m.concepto}</div>
+      <div class="kpi-value">${fmt(m.valor_2025, m.unidad==='%'?1:1)} ${m.unidad}</div>
+      ${deltaHTML}
+      <div class="kpi-source">${m.fuente} · <span class="tag ${m.nivel.includes('Nivel 1')?'tag-dato':m.nivel.includes('Nivel 2')?'tag-dato':'tag-calc'}" style="font-size:.62rem;">${m.nivel}</span></div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ============ PERFIL DE NEGOCIO ============
+function renderNegocio(){
+  const ing = DATA.ingresos_area;
+  barH(document.getElementById('chartArea'),
+    ing.map(a=>({label:a.area, value:[a.ingresos_2025], colors:[PRIMARY]})),
+    {unit:'M€', maxVal: Math.max(...ing.map(a=>a.ingresos_2025))*1.15});
+  barH(document.getElementById('chartResultadoArea'),
+    ing.map(a=>({label:a.area, value:[Math.abs(a.resultado_2025)], colors:[a.resultado_2025>=0?'#1C6B3C':'#A3121C']})),
+    {unit:'M€', maxVal: Math.max(...ing.map(a=>Math.abs(a.resultado_2025)))*1.3});
+  donut(document.getElementById('chartNoVidaVida'),
+    [{label:'No Vida',value:71.0,color:PRIMARY},{label:'Vida',value:29.0,color:SECOND}],
+    {centerLabel:'71,0%',centerSub:'No Vida'});
+}
+
+// ============ PASIVOS SII ============
+function renderPasivos(){
+  const act=DATA.balance_activos.principales;
+  barH(document.getElementById('chartActivos'),
+    act.map(a=>({label:a.partida, value:[a.SII], colors:[PRIMARY]})),
+    {unit:'M€', maxVal: Math.max(...act.map(a=>a.SII))*1.15});
+  const pas=DATA.balance_pasivos.principales;
+  barH(document.getElementById('chartPasivos'),
+    pas.map(a=>({label:a.partida, value:[a.SII], colors:[SECOND]})),
+    {unit:'M€', maxVal: Math.max(...pas.map(a=>a.SII))*1.15});
+
+  // Tabla comparativa balance (activos+pasivos)
+  const rowsAct = act.map(a=>`<tr><td>${a.partida} (Activo)</td><td>${fmt(a.SII)}</td><td>${fmt(a.contable_ajustado)}</td><td>${fmt(a.contable_ccaa)}</td></tr>`).join('');
+  const rowsPas = pas.map(a=>`<tr><td>${a.partida} (Pasivo)</td><td>${fmt(a.SII)}</td><td>${fmt(a.contable_ajustado)}</td><td>${fmt(a.contable_ccaa)}</td></tr>`).join('');
+  document.querySelector('#tableBalanceComp tbody').innerHTML = rowsAct + rowsPas +
+    `<tr style="font-weight:800;background:#FAFAFA;"><td>TOTAL ACTIVO</td><td>${fmt(DATA.balance_activos.total_activo_SII_2025)}</td><td>${fmt(DATA.balance_activos.total_activo_contable_ajustado_2025)}</td><td>${fmt(DATA.balance_activos.total_activo_contable_ccaa_2025)}</td></tr>
+     <tr style="font-weight:800;background:#FAFAFA;"><td>TOTAL PASIVO</td><td>${fmt(DATA.balance_pasivos.total_pasivo_SII_2025)}</td><td>${fmt(DATA.balance_pasivos.total_pasivo_contable_ajustado_2025)}</td><td>${fmt(DATA.balance_pasivos.total_pasivo_contable_ccaa_2025)}</td></tr>`;
+
+  // Conciliación patrimonio
+  const conc = [
+    ["Patrimonio neto NIIF cuentas anuales", 10514.2, 9985.5],
+    ["Ajustes por perímetro Solvencia II", -832.3, -841.0],
+    ["Patrimonio NIIF perímetro Solvencia II", 9681.9, 9144.5],
+    ["Eliminación fondo de comercio y activos intangibles", -1982.0, -2146.7],
+    ["Eliminación comisiones anticipadas y otros costes adquisición", -49.3, -98.6],
+    ["Ajuste neto activos/pasivos por impuestos diferidos", -39.2, -68.5],
+    ["Ajuste valoración inmovilizado material uso propio", 239.8, 209.2],
+    ["Ajustes valoración inversiones", -1304.2, -1020.7],
+    ["Acciones propias", 52.0, 25.5],
+    ["Ajuste valoración importes recuperables reaseguro", -1113.8, -1221.0],
+    ["Otros ajustes valoración en otros activos", 2944.1, 2958.0],
+    ["Ajustes valoración provisiones técnicas", 2710.5, 2835.7],
+    ["Otros ajustes valoración en otros pasivos", -1207.6, -1385.3],
+    ["Excedente de activos sobre pasivos Solvencia II", 9932.2, 9232.1],
+  ];
+  document.querySelector('#tableConciliacion tbody').innerHTML = conc.map(r=>
+    `<tr${r[0].includes('Excedente')||r[0].includes('perímetro Solvencia')?' style="font-weight:700;"':''}><td>${r[0]}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td></tr>`).join('');
+}
+</script>
+
+<script>
+// ============ DESCOMPOSICIÓN PT ============
+function renderPT(){
+  const steps=[
+    {label:'MBE No Vida', delta:12048.2+463.0, isTotal:false},
+    {label:'MR No Vida', delta:358.0+23.7, isTotal:false},
+    {label:'MBE Vida', delta:15397.8+306.9, isTotal:false},
+    {label:'MR Vida', delta:313.6+12.7, isTotal:false},
+    {label:'UL (como un todo+MBE+MR)', delta:3298.4, isTotal:false},
+    {label:'PT TOTAL', delta:0, isTotal:true},
+  ];
+  // Fix cumulative total
+  let sum=0; steps.forEach(s=>{ if(!s.isTotal) sum+=s.delta; });
+  steps[steps.length-1].delta = sum; // ensures last bar = total when isTotal uses .end
+  waterfall(document.getElementById('chartWaterfallPT'), steps.map((s,i)=> i===steps.length-1 ? {...s, delta: 0} : s).map((s,i)=> i===steps.length-1 ? {...s, isTotal:true, delta: sum} : s));
+
+  // PT por segmento: MBE vs MR
+  const segs=[
+    {name:'No Vida (excl.enf.)', mbe:12048.2, mr:358.0},
+    {name:'Enfermedad (sim. No Vida)', mbe:463.0, mr:23.7},
+    {name:'Vida (excl.enf/UL)', mbe:15397.8, mr:313.6},
+    {name:'Enfermedad (sim. Vida)', mbe:306.9, mr:12.7},
+    {name:'Unit-Linked', mbe:Math.max(0,-68.2+3360.7), mr:6.0},
+  ];
+  barV(document.getElementById('chartPTSegmento'), segs.map(s=>s.name),
+    [{name:'Mejor Estimación / Como un todo', data:segs.map(s=>s.mbe), color:PRIMARY},
+     {name:'Margen de Riesgo', data:segs.map(s=>s.mr), color:SECOND}],
+    {unit:'M€', height:300});
+
+  // Tabla PT por LoB
+  const tbody=document.querySelector('#tablePTLoB tbody');
+  tbody.innerHTML = DATA.pt_lob.map(r=>{
+    const ramoColor = r.ramo==='Vida'?'#1552B0':'#9A6B00';
+    return `<tr><td>${r.lob}</td><td style="text-align:left;"><span class="badge" style="background:${ramoColor}22;color:${ramoColor};">${r.ramo}</span></td>
+      <td>${fmt(r.mejor_est)}</td><td>${fmt(r.margen_riesgo)}</td><td>${r.como_un_todo?fmt(r.como_un_todo):'—'}</td><td style="font-weight:700;">${fmt(r.pt_total)}</td></tr>`;
+  }).join('');
+
+  // Tabla LTG
+  document.querySelector('#tableLTG tbody').innerHTML = `
+    <tr><td>Ajuste por Casamiento</td><td>+143,6 M€ si se retira</td><td>SCR: −27,7 M€ / FP básicos: −107,7 M€</td></tr>
+    <tr><td>Ajuste por Volatilidad</td><td>+35,2 M€ si se retira</td><td>SCR: −1,0 M€ / FP básicos: −25,9 M€</td></tr>
+    <tr><td>Deducción transitoria sobre PT</td><td>Valorada a 0 (potencial −418,3 M€)</td><td>Fondos Propios: +313,7 M€ · Ratio: +6,1 p.p.</td></tr>`;
+}
+
+// ============ LoB INTERACTIVO ============
+let lobData = [];
+function buildLobData(){
+  DATA.primas_lob_novida.forEach(r=>lobData.push({lob:r.lob, ramo:'No Vida', p25:r.primas_imp_neta_2025, p24:r.primas_imp_neta_2024}));
+  DATA.primas_lob_vida.forEach(r=>lobData.push({lob:r.lob, ramo:'Vida', p25:r.primas_imp_neta_2025, p24:r.primas_imp_neta_2024}));
+  lobData.forEach(r=>{ r.var = r.p24? ((r.p25-r.p24)/r.p24*100) : null; });
+}
+function renderLobTable(filterText='', ramoFilter=''){
+  const tbody=document.querySelector('#tableLoBPrimas tbody');
+  const filtered = lobData.filter(r=> r.lob.toLowerCase().includes(filterText.toLowerCase()) && (!ramoFilter || r.ramo===ramoFilter));
+  tbody.innerHTML = filtered.map(r=>{
+    const varColor = r.var==null?'#6B6B70':(r.var>=0?'#1C6B3C':'#A3121C');
+    return `<tr><td>${r.lob}</td><td style="text-align:left;">${r.ramo}</td><td>${fmt(r.p25)}</td><td>${r.p24!=null?fmt(r.p24):'N/D'}</td>
+      <td style="color:${varColor};font-weight:700;">${r.var!=null?(r.var>=0?'+':'')+fmt(r.var)+'%':'N/D'}</td></tr>`;
+  }).join('');
+}
+let lobSortKey=null, lobSortDir=1;
+function initLobInteractivity(){
+  buildLobData();
+  renderLobTable();
+  document.getElementById('lobFilter').addEventListener('input', e=>renderLobTable(e.target.value, document.getElementById('lobRamoFilter').value));
+  document.getElementById('lobRamoFilter').addEventListener('change', e=>renderLobTable(document.getElementById('lobFilter').value, e.target.value));
+  document.querySelectorAll('#tableLoBPrimas th[data-key]').forEach(th=>{
+    th.addEventListener('click',()=>{
+      const key=th.dataset.key;
+      lobSortDir = (lobSortKey===key) ? -lobSortDir : 1; lobSortKey=key;
+      document.querySelectorAll('#tableLoBPrimas th').forEach(h=>h.classList.remove('sortasc','sortdesc'));
+      th.classList.add(lobSortDir===1?'sortasc':'sortdesc');
+      lobData.sort((a,b)=>{
+        let va=a[key==='p25'?'p25':key==='p24'?'p24':key==='var'?'var':key], vb=b[key==='p25'?'p25':key==='p24'?'p24':key==='var'?'var':key];
+        if(typeof va==='string') return lobSortDir*va.localeCompare(vb);
+        va = va==null?-Infinity:va; vb = vb==null?-Infinity:vb;
+        return lobSortDir*(va-vb);
+      });
+      renderLobTable(document.getElementById('lobFilter').value, document.getElementById('lobRamoFilter').value);
+    });
+  });
+}
+
+function renderGeografia(){
+  const nv=DATA.primas_geografia_novida;
+  barV(document.getElementById('chartGeoNoVida'), nv.map(p=>p.pais),
+    [{name:'2025',data:nv.map(p=>p.primas_2025),color:PRIMARY},{name:'2024',data:nv.map(p=>p.primas_2024),color:'#D9D9DC'}],
+    {unit:'M€',height:260});
+  const vd=DATA.primas_geografia_vida;
+  barV(document.getElementById('chartGeoVida'), vd.map(p=>p.pais),
+    [{name:'2025',data:vd.map(p=>p.primas_2025),color:SECOND},{name:'2024',data:vd.map(p=>p.primas_2024),color:'#D9D9DC'}],
+    {unit:'M€',height:260});
+}
+</script>
+
+<script>
+// ============ REASEGURO ============
+function renderReaseguro(){
+  donut(document.getElementById('chartReaseguro'),
+    [{label:'No Vida', value:3310.0, color:PRIMARY},
+     {label:'Vida', value:37.3, color:SECOND}],
+    {centerLabel:fmt(3347.3,0), centerSub:'M€ Total'});
+}
+
+// ============ EVOLUCIÓN INTERANUAL ============
+function renderEvolucion(){
+  const pt=DATA.pt_evolucion;
+  barV(document.getElementById('chartEvolPT'), ['2024','2025'],
+    [{name:'No Vida', data:[pt.no_vida['2024'],pt.no_vida['2025']], color:PRIMARY},
+     {name:'Vida (excl.UL)', data:[pt.vida_excl_ul['2024'],pt.vida_excl_ul['2025']], color:SECOND},
+     {name:'Unit-Linked', data:[pt.unit_linked['2024'],pt.unit_linked['2025']], color:'#1552B0'}],
+    {unit:'M€', height:260});
+
+  barV(document.getElementById('chartEvolSolvencia'), ['2024','2025'],
+    [{name:'SCR (M€/10)', data:[485.79, 515.45], color:PRIMARY},
+     {name:'Ratio Solvencia (%)', data:[207.4, 205.3], color:SECOND}],
+    {unit:'', height:260});
+  const note1=document.createElement('p'); note1.className='note'; note1.textContent='Nota: SCR representado a escala /10 para comparabilidad visual con el ratio (%). Ver tabla de evolución para valores exactos.';
+  document.getElementById('chartEvolSolvencia').parentElement.appendChild(note1);
+
+  barV(document.getElementById('chartEvolNegocio'), ['2024','2025'],
+    [{name:'Primas netas (M€/100)', data:[221.896, 237.26], color:PRIMARY},
+     {name:'Beneficio (M€/10)', data:[96.75, 113.26], color:SECOND},
+     {name:'Ratio Combinado (%)', data:[93.0, 90.2], color:'#1552B0'}],
+    {unit:'', height:260});
+  const note2=document.createElement('p'); note2.className='note'; note2.textContent='Nota: Primas (/100) y Beneficio (/10) reescalados para comparabilidad visual conjunta con el Ratio Combinado (%).';
+  document.getElementById('chartEvolNegocio').parentElement.appendChild(note2);
+
+  const evolRows = [
+    ['Primas imputadas netas consolidadas', 22189.6, 23726.0, 6.9, 'A.2, pág.17'],
+    ['Beneficio atribuible', 967.5, 1132.6, 17.1, 'Resumen Ejecutivo pág.4'],
+    ['Ratio combinado No Vida', 93.0, 90.2, -3.0, 'Resumen Ejecutivo pág.4'],
+    ['Total Activos SII', 49284.3, 51917.0, 5.3, 'D.6.A pág.93'],
+    ['Total Pasivos SII', 40052.2, 41984.8, 4.8, 'D.6.C pág.96'],
+    ['Total Provisiones Técnicas SII', 30555.6, 32222.1, 5.5, 'D.6.B pág.94'],
+    ['SCR Grupo', 4857.9, 5154.5, 6.1, 'E.2.1 pág.109'],
+    ['Fondos Propios admisibles', 10077.4, 10580.5, 5.0, 'E.1.2 pág.103'],
+    ['Ratio de Solvencia', 207.4, 205.3, -1.0, 'E.1.2 pág.103'],
+    ['Importes recuperables de reaseguro', 2938.4, 3347.3, 13.9, 'D.6.A pág.94'],
+  ];
+  document.querySelector('#tableEvolucion tbody').innerHTML = evolRows.map(r=>
+    `<tr><td>${r[0]}</td><td>${fmt(r[1])}</td><td>${fmt(r[2])}</td><td style="color:${r[3]>=0?'#1C6B3C':'#A3121C'};font-weight:700;">${r[3]>=0?'+':''}${fmt(r[3])}%</td><td style="text-align:left;" class="small">${r[4]}</td></tr>`).join('');
+}
+
+// ============ RIESGO Y CAPITAL ============
+function renderCapital(){
+  donut(document.getElementById('chartSCRDonut'),
+    DATA.scr_modulos.map((m,i)=>({label:m.modulo, value:m.pct_2025, color:PALETTE[i]})),
+    {centerLabel:'5.154,5', centerSub:'M€ SCR Grupo'});
+
+  barV(document.getElementById('chartFondosPropios'), ['Nivel 1 no restr.','Nivel 2','Nivel 3'],
+    [{name:'2025', data:[DATA.fondos_propios.nivel1_no_restringido_2025, DATA.fondos_propios.nivel2_2025, DATA.fondos_propios.nivel3_2025], color:PRIMARY},
+     {name:'2024', data:[DATA.fondos_propios.nivel1_no_restringido_2024, DATA.fondos_propios.nivel2_2024, DATA.fondos_propios.nivel3_2024], color:'#D9D9DC'}],
+    {unit:'M€', height:260});
+
+  // Sensibilidad (barras horizontales con delta pp, waterfall-style)
+  const sens = DATA.sensibilidades.filter(s=>s.impacto_pp!=null);
+  const W=640,H=28*sens.length+40,leftPad=260,midX=leftPad+140,rightPad=20;
+  const svg=makeSVG(W,H);
+  const maxAbs=Math.max(...sens.map(s=>Math.abs(s.impacto_pp)))*1.2;
+  sens.forEach((s,i)=>{
+    const y=20+i*28;
+    const lbl=svgEl('text',{x:leftPad-8,y:y+12,'text-anchor':'end','font-size':'10.5','fill':'#1C1C1E'});
+    lbl.textContent=s.escenario; svg.appendChild(lbl);
+    const w=(Math.abs(s.impacto_pp)/maxAbs)*130;
+    const x = s.impacto_pp>=0 ? midX : midX-w;
+    const rect=svgEl('rect',{x,y,width:w,height:18,fill:s.impacto_pp>=0?'#1C6B3C':'#A3121C',rx:2});
+    addTooltip(rect, `${s.escenario}: ${s.impacto_pp>=0?'+':''}${fmt(s.impacto_pp)} p.p. (ratio resultante: ${fmt(s.ratio)}%)`);
+    svg.appendChild(rect);
+    const valT=svgEl('text',{x: s.impacto_pp>=0? midX+w+5: midX-w-5, y:y+13, 'text-anchor': s.impacto_pp>=0?'start':'end','font-size':'10','font-weight':'700','fill':'#1A1A1A'});
+    valT.textContent=`${s.impacto_pp>=0?'+':''}${fmt(s.impacto_pp)} p.p.`; svg.appendChild(valT);
+  });
+  svg.appendChild(svgEl('line',{x1:midX,y1:10,x2:midX,y2:H-10,stroke:'#999','stroke-dasharray':'3,3'}));
+  document.getElementById('chartSensibilidad').appendChild(svg);
+
+  // Matriz de materialidad (cualitativa)
+  const riesgos = [
+    {name:'Ciber Riesgo', prob:5, imp:5},
+    {name:'Geopolítico', prob:5, imp:4},
+    {name:'Macroeconómico', prob:4, imp:4},
+    {name:'Catástrofes naturales', prob:4, imp:5},
+    {name:'IA (riesgos)', prob:3, imp:3},
+    {name:'Cambio climático (emergente)', prob:4, imp:4},
+    {name:'Crisis financieras/conflictos (emergente)', prob:3, imp:4},
+    {name:'Digitalización/hábitos consumo (emergente)', prob:3, imp:3},
+  ];
+  const matDiv = document.getElementById('matrixRiesgos');
+  const matW=560, matH=360, pad=70;
+  const msvg = makeSVG(matW, matH);
+  // grid 5x5 background
+  for(let r=0;r<5;r++){ for(let c=0;c<5;c++){
+    const level = r+c; // 0..8 ~ low to high
+    const color = level<=2?'#E3F6EA':level<=4?'#FFF1DE':level<=6?'#FFD9D0':'#FFE0E0';
+    msvg.appendChild(svgEl('rect',{x:pad+c*((matW-pad-20)/5), y:20+(4-r)*((matH-60)/5), width:(matW-pad-20)/5-2, height:(matH-60)/5-2, fill:color}));
+  }}
+  // axes labels
+  msvg.appendChild((()=>{const t=svgEl('text',{x:pad+(matW-pad-20)/2,y:matH-8,'text-anchor':'middle','font-size':'10','fill':'#1C1C1E','font-weight':'700'});t.textContent='Probabilidad / Relevancia declarada →';return t;})());
+  const ylabel=svgEl('text',{x:14,y:matH/2,'text-anchor':'middle','font-size':'10','fill':'#1C1C1E','font-weight':'700',transform:`rotate(-90 14 ${matH/2})`});
+  ylabel.textContent='Impacto potencial →'; msvg.appendChild(ylabel);
+  riesgos.forEach(r=>{
+    const cx=pad+(r.prob-0.5)*((matW-pad-20)/5), cy=20+(4-(r.imp-1))*((matH-60)/5)+((matH-60)/10);
+    const circ=svgEl('circle',{cx,cy,r:7,fill:PRIMARY,stroke:'#fff','stroke-width':1.5});
+    addTooltip(circ, `${r.name} — posición interpretativa (prob≈${r.prob}/5, impacto≈${r.imp}/5)`);
+    msvg.appendChild(circ);
+    const t=svgEl('text',{x:cx,y:cy-10,'text-anchor':'middle','font-size':'7.3','fill':'#1A1A1A','font-weight':'600'});
+    t.textContent=r.name.length>22? r.name.slice(0,20)+'…' : r.name;
+    msvg.appendChild(t);
+  });
+  matDiv.appendChild(msvg);
+}
+</script>
+
+<script>
+// ============ TRAZABILIDAD ============
+let trazaSortKey=null, trazaSortDir=1;
+let trazaDataLocal = [...DATA.trazabilidad];
+function renderTrazabilidad(filterText='', estadoFilter=''){
+  const tbody=document.querySelector('#tableTrazabilidad tbody');
+  const filtered = trazaDataLocal.filter(r=>{
+    const matchText = (r.concepto+' '+r.seccion+' '+String(r.pagina)).toLowerCase().includes(filterText.toLowerCase());
+    const matchEstado = !estadoFilter || r.estado.includes(estadoFilter);
+    return matchText && matchEstado;
+  });
+  tbody.innerHTML = filtered.map(r=>{
+    const lvlClass = r.tipo_fuente.includes('Nivel 1')?'lvl1':r.tipo_fuente.includes('Nivel 2')?'lvl2':r.tipo_fuente.includes('Nivel 3')?'lvl3':'lvl4';
+    const estadoBadge = r.estado.includes('Verificado')?'badge-verificado':r.estado.includes('Calculado')?'badge-calculado':r.estado.includes('No reconciliado')?'badge-noreconciliado':'badge-nodisponible';
+    return `<tr><td>${r.id}</td><td style="text-align:left;">${r.concepto}</td><td style="text-align:left;">${r.valor}</td>
+      <td style="text-align:left;">${r.seccion}</td><td>${r.pagina}</td><td style="text-align:left;" class="${lvlClass}">${r.tipo_fuente}</td>
+      <td style="text-align:left;"><span class="badge ${estadoBadge}">${r.estado.split('—')[0].trim()}</span></td></tr>`;
+  }).join('');
+}
+function initTrazabilidad(){
+  renderTrazabilidad();
+  document.getElementById('trazaFilter').addEventListener('input', e=>renderTrazabilidad(e.target.value, document.getElementById('trazaEstadoFilter').value));
+  document.getElementById('trazaEstadoFilter').addEventListener('change', e=>renderTrazabilidad(document.getElementById('trazaFilter').value, e.target.value));
+  document.querySelectorAll('#tableTrazabilidad th[data-key]').forEach(th=>{
+    th.addEventListener('click',()=>{
+      const key=th.dataset.key;
+      trazaSortDir = (trazaSortKey===key)?-trazaSortDir:1; trazaSortKey=key;
+      document.querySelectorAll('#tableTrazabilidad th').forEach(h=>h.classList.remove('sortasc','sortdesc'));
+      th.classList.add(trazaSortDir===1?'sortasc':'sortdesc');
+      trazaDataLocal.sort((a,b)=>{
+        let va=a[key], vb=b[key];
+        if(typeof va==='number') return trazaSortDir*(va-vb);
+        return trazaSortDir*String(va).localeCompare(String(vb));
+      });
+      renderTrazabilidad(document.getElementById('trazaFilter').value, document.getElementById('trazaEstadoFilter').value);
+    });
+  });
+}
+
+// ============ LIMITACIONES ============
+function renderLimitaciones(){
+  const cont=document.getElementById('limitacionesList');
+  cont.innerHTML = DATA.limitaciones.map(l=>{
+    const tagClass = l.tipo.includes('DISCREPANCIA')?'tag-limit':'tag-limit';
+    let extra='';
+    if(l.ubicacion) extra += `<p class="small"><b>Ubicación:</b> ${l.ubicacion}</p>`;
+    if(l.causa_declarada) extra += `<p class="small"><b>Causa declarada:</b> ${l.causa_declarada}</p>`;
+    if(l.resolucion) extra += `<p class="small"><b>Tratamiento aplicado:</b> ${l.resolucion}</p>`;
+    if(l.impacto) extra += `<p class="small"><b>Impacto:</b> ${l.impacto}</p>`;
+    return `<details><summary><span class="tag ${tagClass}">${l.tipo}</span> ${l.descripcion.slice(0,90)}...</summary>
+      <p>${l.descripcion}</p>${extra}</details>`;
+  }).join('');
+}
+
+// ============ CONTROLES: TOGGLE VISTA / EJERCICIO / PRINT ============
+function initControls(){
+  const toggleBtn=document.getElementById('viewToggle');
+  toggleBtn.addEventListener('click',()=>{
+    const isTech = document.body.classList.toggle('tech-mode');
+    toggleBtn.setAttribute('aria-pressed', isTech?'true':'false');
+    toggleBtn.textContent = isTech? 'Vista: Técnica ⇄ Ejecutiva' : 'Vista: Ejecutiva ⇄ Técnica';
+  });
+  document.getElementById('printBtn').addEventListener('click',()=>window.print());
+  document.getElementById('yearSelect').addEventListener('change', e=>{
+    alert('Nota: este SFCR reporta el ejercicio 2025 con comparativo 2024 embebido en todas las tablas y gráficos. El selector permite resaltar el foco narrativo; los datos de ambos ejercicios ya están disponibles simultáneamente en el dashboard.');
+  });
+  document.getElementById('genTimestamp').textContent = DATA.generado;
+}
+
+// ============ INIT GLOBAL ============
+document.addEventListener('DOMContentLoaded', function(){
+  renderKPIs();
+  renderNegocio();
+  renderPasivos();
+  renderPT();
+  initLobInteractivity();
+  renderGeografia();
+  renderReaseguro();
+  renderEvolucion();
+  renderCapital();
+  initTrazabilidad();
+  renderLimitaciones();
+  initControls();
+});
+</script>
+</body>
+</html>
